@@ -1,0 +1,289 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoFlex Profile</title>
+    <link rel="stylesheet" href="{% static 'CoFlex_app/css/user_profile_css/user_read_profile.css' %}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="{% static 'CoFlex_app/favicon/favicon.png' %}" type="image/x-icon" >
+    <style>
+        .messages {
+            position: fixed;
+            top: 6rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 25rem;
+            z-index: 1000;
+            text-align: center;
+        }
+
+        .message {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            margin: 0 auto;
+            max-width: 25rem;
+        }
+
+        .messages-container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+        }
+
+        .message {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-md);
+            background-color: white;
+        }
+
+        .message-icon {
+            font-size: 1.5rem;
+        }
+
+        .message--success {
+            background-color: #ecfdf5;
+            color: var(--success-color);
+            border-left: 4px solid var(--success-color);
+        }
+
+        .message--error {
+            background-color: #fef2f2;
+            color: var(--error-color);
+            border-left: 4px solid var(--error-color);
+        }
+
+        .message--info {
+            background-color: #eff6ff;
+            color: var(--info-color);
+            border-left: 4px solid var(--info-color);
+        }
+
+        .message-text {
+            flex-grow: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        {% csrf_token %}
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+            <div class="brand-section">
+                <a href="{% url 'user_home' user_id=user.id %}" class="logo">
+                    <span class="material-icons">motion_photos_auto</span>
+                    <span>CoFlex</span>
+                </a>
+            </div>
+            <div class="nav-buttons">
+                <a href="{% url 'user_home' user_id=user.id %}" class="nav-btn">
+                    <span class="material-icons">home</span>
+                    <span>Home</span>
+                </a>
+                <a href="{% url 'user_read_profile' user_id=user.id %}" class="nav-btn active">
+                    <span class="material-icons">account_circle</span>
+                    <span>Profile</span>
+                </a>
+                <a href="{% url 'locations' user_id=user.id %}" class="nav-btn">
+                    <span class="material-icons">event</span>
+                    <span>Booking</span>
+                </a>
+                <a href="{% url 'subscribed_user_all_bookings' user_id=user.id %}" class="nav-btn">
+                    <span class="material-icons">history</span>
+                    <span>History</span>
+                </a>
+                <a href="{% url 'user_recent_actions_history' user_id=user.id %}" class="nav-btn">
+                    <span class="material-icons">update</span>
+                    <span>Recent Actions</span>
+                </a>
+                <a href="{% url 'user_settings' user_id=user.id %}" class="nav-btn">
+                    <span class="material-icons">settings</span>
+                    <span>Settings</span>
+                </a>
+                <a href="{% url 'logout_user' %}" class="nav-btn logout">
+                    <span class="material-icons">logout</span>
+                    <span>Log Out</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Messages section -->
+        {% if messages %}
+        <div class="messages" role="alert" aria-live="polite">
+            {% for message in messages %}
+            <div class="message message--{{ message.tags }}">
+                {% if message.tags == 'error' %}
+                    <span class="material-icons message-icon">error_outline</span>
+                {% elif message.tags == 'success' %}
+                    <span class="material-icons message-icon">check_circle</span>
+                {% elif message.tags == 'info' %}
+                    <span class="material-icons message-icon">info</span>
+                {% endif %}
+                <span class="message-text">{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <main class="profile-content">
+            <!-- Profile Header -->
+            <section class="profile-header">
+                <!-- Replace the profile photo section with this updated version -->
+                <form action="{% url 'update_profile_photo' user_id=user.id %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="profile-photo-container">
+                        {% if user_photo_details.profile_photo %}
+                            <img src="{{ user_photo_details.profile_photo.url }}" alt="Profile Photo" class="profile-photo">
+                        {% else %}
+                            <img src="{% static 'CoFlex_app/profile_default/photo.jpg' %}" alt="Default Profile Picture" class="profile-photo">
+                        {% endif %}
+                        <input type="file" name="profile_photo" id="profile_photo" accept="image/*" required>
+                        <button class="photo-edit-btn" title="Change profile photo">
+                            <span class="material-icons">photo_camera</span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Update the username display -->
+                <div class="profile-info">
+                    <h1>{{ user.first_name }} {{ user.last_name }}</h1>
+                    <p class="username">{% if profile.username %}@{{ profile.username }}{% else %}No username added yet{% endif %}</p>
+                    <p class="bio">{{ user_extra_details.bio|default:"No bio added yet" }}</p>
+                </div>
+
+            </section>
+
+            <section class="profile-details">
+                <div class="details-grid">
+                    <div class="details-card">
+                        <div class="card-header">
+                            <h2>
+                                <span class="material-icons">person</span>
+                                Basic Information
+                            </h2>
+                            <a href="{% url 'user_edit_basic_info' user_id=user.id %}">
+                                <button class="edit-btn" data-section="basic-info">
+                                    <span class="material-icons">edit</span>
+                                </button>
+                            </a>
+                        </div>
+                        <div class="card-content">
+                            <div class="info-item">
+                                <span class="label">First Name</span>
+                                <span class="value">{{ user.first_name }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Last Name</span>
+                                <span class="value">{{ user.last_name }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Email</span>
+                                <span class="value">{{ user.email }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Phone</span>
+                                <span class="value">{{ profile.phone_number|default:"Not provided" }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Personal Details Card -->
+                    <div class="details-card">
+                        <div class="card-header">
+                            <h2>
+                                <span class="material-icons">face</span>
+                                Personal Details
+                            </h2>
+                            <a href="{% url 'user_edit_personal_info' user_id=user.id %}">
+                                <button class="edit-btn" data-section="personal">
+                                    <span class="material-icons">edit</span>
+                                </button>
+                            </a>
+                        </div>
+                        <div class="card-content">
+                            <div class="info-item">
+                                <span class="label">Date of Birth</span>
+                                <span class="value">{{ user_extra_details.dob|default:"Not provided" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Gender</span>
+                                <span class="value">{{ user_extra_details.gender|default:"Not provided" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Address</span>
+                                <span class="value">{{ profile.address|default:"Not provided" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Website</span>
+                                <span class="value">{{ user_extra_details.website|default:"Not provided" }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Contact Card -->
+                    <div class="details-card">
+                        <div class="card-header">
+                            <h2>
+                                <span class="material-icons">contact_mail</span>
+                                Additional Contact
+                            </h2>
+                            <a href="{% url 'user_edit_secondary_info' user_id=user.id %}">
+                                <button class="edit-btn" data-section="contact">
+                                    <span class="material-icons">edit</span>
+                                </button>
+                            </a>
+                        </div>
+                        <div class="card-content">
+                            <div class="info-item">
+                                <span class="label">Email</span>
+                                <span class="value">{{ user_extra_contact_details.second_email|default:"Not provided" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Alternative Phone</span>
+                                <span class="value">{{ user_extra_contact_details.second_phone_number|default:"Not provided" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Second Address</span>
+                                <span class="value">{{ user_extra_contact_details.second_address|default:"Not provided" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2025 CoFlex. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="{% static 'CoFlex_app/js/user_profile_js/user_read_profile.js' %}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const messages = document.querySelector('.messages');
+            if (messages) {
+                setTimeout(() => {
+                    messages.style.transition = 'opacity 1s ease';
+                    messages.style.opacity = '0';
+                    setTimeout(() => messages.remove(), 500);
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

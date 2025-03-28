@@ -1,0 +1,325 @@
+/* CSS styling of user_edit_main_email.html */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Colors */
+:root {
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-light: rgba(37, 99, 235, 0.1);
+    --success-color: #059669;
+    --success-light: #f0fdf4;
+    --success-border: #bbf7d0;
+    --error-color: #dc2626;
+    --error-light: #fef2f2;
+    --error-border: #fee2e2;
+    --info-color: #0891b2;
+    --info-light: #f0f9ff;
+    --info-border: #bae6fd;
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+    --border-color: #e5e7eb;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f3f4f6;
+    --border-light: #e5e7eb;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+
+    /* Spacing */
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 0.75rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+}
+
+/* Body */
+body {
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+    color: var(--text-primary);
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Layout */
+.page-container {
+    width: 100%;
+    padding: var(--spacing-md);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.form-container {
+    background: var(--bg-primary);
+    border-radius: 1rem;
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 24rem;
+    padding: var(--spacing-xl);
+}
+
+/* Brand */
+.brand {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.brand-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    text-decoration: none;
+    color: var(--primary-color);
+}
+
+.brand-icon {
+    font-size: 2rem;
+    color: var(--primary-color);
+}
+
+.brand-text {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* Header */
+h1 {
+    font-size: 1.875rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-xl);
+    color: var(--text-primary);
+    text-align: center;
+}
+
+/* Messages */
+.messages {
+    margin-bottom: var(--spacing-lg);
+}
+
+.message {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.message--error {
+    background-color: var(--error-light);
+    border: 1px solid var(--error-border);
+    color: var(--error-color);
+}
+
+.message--success {
+    background-color: var(--success-light);
+    border: 1px solid var(--success-border);
+    color: var(--success-color);
+}
+
+.message--info {
+    background-color: var(--info-light);
+    border: 1px solid var(--info-border);
+    color: var(--info-color);
+}
+
+
+/* Error Messages */
+.error-message {
+    background-color: var(--error-light);
+    border: 1px solid var(--error-border);
+    border-radius: 0.5rem;
+    color: var(--error-color);
+    font-size: 0.875rem;
+    margin: var(--spacing-md) 0;
+    padding: var(--spacing-md);
+}
+
+.error-message p {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    line-height: 1.5;
+    margin: 0.5rem 0;
+}
+
+.error-message p:before {
+    content: "error_outline";
+    font-family: 'Material Icons';
+    font-size: 1.25rem;
+}
+
+.error-message p:first-child {
+    margin-top: 0;
+}
+
+.error-message p:last-child {
+    margin-bottom: 0;
+}
+
+.form-group .error-message {
+    background-color: transparent;
+    border: none;
+    padding: var(--spacing-xs) 0 0 0;
+    margin: 0;
+}
+
+.form-group .error-message p {
+    color: var(--error-color);
+    font-size: 0.813rem;
+    padding-left: var(--spacing-md);
+}
+
+.form-group .error-message p:before {
+    font-size: 1rem;
+}
+
+/* Input error state enhancement */
+.input-error input[type="email"] {
+    border-color: var(--error-color);
+    background-color: var(--error-light);
+    border-width: 1.5px;
+}
+
+.input-error .input-icon {
+    color: var(--error-color);
+}
+
+/* Form Elements */
+.form-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: var(--spacing-xs);
+    color: var(--text-primary);
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.input-icon {
+    position: absolute;
+    left: var(--spacing-md);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--primary-color);
+    pointer-events: none;
+}
+
+input[type="email"] {
+    width: 100%;
+    padding: 0.875rem var(--spacing-md);
+    padding-left: 2.75rem;
+    font-size: 1rem;
+    border: 1.5px solid var(--border-light);
+    border-radius: 0.5rem;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+input[type="email"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px var(--primary-light);
+}
+
+.error-message {
+    color: var(--error-color);
+    font-size: 0.875rem;
+    margin-top: var(--spacing-xs);
+}
+
+.input-error input[type="email"] {
+    border-color: var(--error-color);
+    background-color: var(--error-light);
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-xl);
+}
+
+.btn-submit, .btn-cancel {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--spacing-xs);
+    width: 100%;
+    padding: 0.875rem;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-submit {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+}
+
+.btn-submit:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-cancel {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    text-decoration: none;
+}
+
+.btn-cancel:hover {
+    background-color: var(--border-light);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.button-icon {
+    font-size: 1.25rem;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+    .form-container {
+        padding: var(--spacing-lg);
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+    }
+}

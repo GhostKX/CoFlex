@@ -1,0 +1,184 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Book a Location - CoFlex">
+    <title>Book a Location - CoFlex</title>
+    <!-- Fonts and Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="icon" href="{% static 'CoFlex_app/favicon/favicon.png' %}" type="image/x-icon" >
+    <link rel="stylesheet" href="{% static 'CoFlex_app/css/subscribed_user_booking_css/booking_location.css' %}">
+</head>
+<body>
+    <div class="page-container">
+        <div class="booking-container">
+            <!-- Brand section -->
+            <div class="brand">
+                <a href="{% url 'user_home' user_id=user.id %}" class="brand-link" aria-label="Return to CoFlex homepage">
+                    <span class="material-icons brand-icon">motion_photos_auto</span>
+                    <span class="brand-text">CoFlex</span>
+                </a>
+            </div>
+
+            <!-- Header section -->
+            <div class="header">
+                <h1 class="title">Book a Location</h1>
+                <p class="subtitle">{{ location.location_name }}</p>
+            </div>
+
+            <!-- Location Info Section -->
+            <div class="location-info">
+                <div class="location-image">
+                    <img src="{{ location.location_details.image_path }}" alt="{{ location.location_name }}" class="location-img">
+                </div>
+                <div class="location-details">
+                    <div class="detail-item">
+                        <span class="material-icons detail-icon">place</span>
+                        <span class="detail-text">{{ location.location_details.address }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="material-icons detail-icon">phone</span>
+                        <span class="detail-text">{{ location.location_details.contact_phone }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="material-icons detail-icon">access_time</span>
+                        <span class="detail-text">{{ location.location_details.working_hours }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="material-icons detail-icon">language</span>
+                        <a href="{{ location.location_details.website }}" target="_blank" class="detail-link">Visit Website</a>
+                    </div>
+                    <div class="detail-item">
+                        <span class="material-icons detail-icon">event_seat</span>
+                        {% if location_availability.availability == 0 %}
+                            <span class="detail-text" style="background-color: #fee2e2; color: #991b1b; padding: 5px; border-radius: 5px;">
+                                0 spots available Today
+                            </span>
+                        {% elif location_availability.availability < 15 %}
+                            <span class="detail-text" style="background-color: #fef9c3; color: #854d0e; padding: 5px; border-radius: 5px;">
+                                {{ location_availability.availability }} spots available Today
+                            </span>
+                        {% else %}
+                            <span class="detail-text" style="background-color: #dcfce7; color: #166534; padding: 5px; border-radius: 5px;">
+                                {{ location_availability.availability }} spots available Today
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages section -->
+            {% if messages %}
+            <div class="messages" role="alert" aria-live="polite">
+                {% for message in messages %}
+                <div class="message message--{{ message.tags }}">
+                    {% if message.tags == 'error' %}
+                        <span class="material-icons message-icon">error_outline</span>
+                    {% elif message.tags == 'success' %}
+                        <span class="material-icons message-icon">check_circle</span>
+                    {% elif message.tags == 'info' %}
+                        <span class="material-icons message-icon">info</span>
+                    {% endif %}
+                    <span class="message-text">{{ message }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Booking form -->
+            <form method="POST" class="booking-form" novalidate>
+                {% csrf_token %}
+
+                <div class="booking-rules">
+                    <p><strong>Booking Rules:</strong></p>
+                    <ul>
+                        <li>Times must be in 30-minute intervals (9:00, 9:30, 10:00, etc.)</li>
+                        <li>Minimum booking duration: 3 hours</li>
+                        <li>Maximum booking duration: 8 hours</li>
+                    </ul>
+                </div>
+
+                <div class="form-group {% if form.start_date.errors %}input-error{% endif %}">
+                    <label for="{{ form.start_date.id_for_label }}" class="form-label">Date</label>
+                    <div class="input-wrapper">
+                        <span class="material-icons input-icon">calendar_today</span>
+                        {{ form.start_date }}
+                    </div>
+                    {% if form.start_date.errors %}
+                    <div class="error-message">
+                        {% for error in form.start_date.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group {% if form.start_time.errors %}input-error{% endif %}">
+                        <label for="{{ form.start_time.id_for_label }}" class="form-label">Check In</label>
+                        <div class="input-wrapper">
+                            <span class="material-icons input-icon">schedule</span>
+                            {{ form.start_time }}
+                        </div>
+                        {% if form.start_time.errors %}
+                        <div class="error-message">
+                            {% for error in form.start_time.errors %}
+                            <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group {% if form.end_time.errors %}input-error{% endif %}">
+                        <label for="{{ form.end_time.id_for_label }}" class="form-label">Check Out</label>
+                        <div class="input-wrapper">
+                            <span class="material-icons input-icon">schedule</span>
+                            {{ form.end_time }}
+                        </div>
+                        {% if form.end_time.errors %}
+                        <div class="error-message">
+                            {% for error in form.end_time.errors %}
+                            <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group {% if form.special_requests.errors %}input-error{% endif %}">
+                    <label for="{{ form.special_requests.id_for_label }}" class="form-label">Special Requests (Optional)</label>
+                    <div class="input-wrapper textarea-wrapper">
+                        {{ form.special_requests }}
+                    </div>
+                    {% if form.special_requests.errors %}
+                    <div class="error-message">
+                        {% for error in form.special_requests.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Hidden field for end_date (same as start_date) -->
+                <input type="hidden" name="end_date" id="id_end_date">
+
+                <div class="form-actions two-buttons">
+                    <button type="submit" class="submit-button">
+                        <span class="material-icons button-icon">event_available</span>
+                        <span class="button-text">Book Now</span>
+                    </button>
+                    <a href="{% url 'locations' user_id=user.id %}" class="cancel-button">
+                        <span class="material-icons button-icon">arrow_back</span>
+                        <span class="button-text">Back to Locations</span>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{% static 'CoFlex_app/js/subscribed_user_booking_js/booking_location.js' %}"></script>
+</body>
+</html>

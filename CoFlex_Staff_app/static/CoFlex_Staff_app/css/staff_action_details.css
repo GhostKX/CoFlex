@@ -1,0 +1,322 @@
+/* CSS styling of staff_action_details.html */
+:root {
+    --primary-color: #2563eb;
+    --primary-dark: #0056b3;
+
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+
+    --white: #ffffff;
+    --gray-100: #f8f9fa;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+    --gray-400: #ced4da;
+    --gray-500: #adb5bd;
+    --gray-600: #6c757d;
+    --gray-700: #495057;
+    --gray-800: #343a40;
+    --gray-900: #212529;
+    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --border-radius: 8px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f5f7fa;
+    color: var(--gray-800);
+    line-height: 1.6;
+}
+
+
+/* Container */
+.container {
+    max-width: 1400px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+}
+
+.header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.header h1 {
+    font-size: 2.2rem;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    color: var(--gray-600);
+    font-size: 1rem;
+}
+
+/* Content layout */
+.content-wrapper {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.details-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.map-section {
+    flex: 1;
+}
+
+/* Card */
+.card {
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    padding: 1.25rem;
+    background-color: var(--primary-color);
+    color: var(--white);
+}
+
+.card-header .material-icons {
+    margin-right: 0.75rem;
+    font-size: 1.5rem;
+}
+
+.card-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Detail items */
+.detail-item {
+    display: flex;
+    margin-bottom: 1.25rem;
+    align-items: center;
+}
+
+.detail-item:last-child {
+    margin-bottom: 0;
+}
+
+.detail-label {
+    display: flex;
+    align-items: center;
+    width: 200px;
+    color: var(--gray-700);
+    font-weight: 500;
+}
+
+.detail-label .material-icons {
+    margin-right: 0.5rem;
+    font-size: 1.25rem;
+    color: var(--primary-color);
+}
+
+.detail-value {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--gray-100);
+    border-radius: var(--border-radius);
+    font-size: 0.95rem;
+}
+
+/* Map */
+#map {
+    height: 400px;
+    width: 100%;
+    border-radius: var(--border-radius);
+    margin-top: 1.5rem;
+    border: 1px solid var(--gray-300);
+}
+
+.location-details {
+    margin-bottom: 1.5rem;
+}
+
+.location-popup {
+    padding: 0.5rem;
+    max-width: 250px;
+}
+
+.location-popup h3 {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    color: var(--primary-color);
+}
+
+.location-popup p {
+    margin-bottom: 0.25rem;
+    font-size: 0.85rem;
+}
+
+.no-data {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--gray-200);
+}
+
+.no-location-data {
+    padding: 2rem;
+    text-align: center;
+    color: var(--gray-600);
+    font-style: italic;
+}
+
+/* Badge */
+.action-badge {
+    display: inline-block;
+    font-weight: 500;
+    text-align: center;
+}
+
+.action-badge.login {
+    color: var(--success-color);
+    background-color: rgba(40, 167, 69, 0.1);
+}
+
+.action-badge.sign {
+    color: var(--primary-color);
+    background-color: rgba(74, 108, 247, 0.1);
+}
+
+.action-badge.logout {
+    color: var(--danger-color);
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.status-badge {
+    display: inline-block;
+    font-weight: 500;
+    text-align: center;
+}
+
+.status-badge.active {
+    color: var(--success-color);
+    background-color: rgba(40, 167, 69, 0.1);
+}
+
+.status-badge.inactive {
+    color: var(--danger-color);
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+/* Action buttons */
+.actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.btn {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.btn .material-icons {
+    margin-right: 0.5rem;
+}
+
+.back-btn {
+    background-color: var(--primary-color);
+    color: var(--white);
+}
+
+.back-btn:hover {
+    background-color: var(--primary-dark);
+}
+
+/* Footer */
+.footer {
+    background-color: white;
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 1.5rem;
+    margin-top: 3rem;
+}
+
+/* Responsive styles */
+@media (max-width: 1024px) {
+    .content-wrapper {
+        flex-direction: column;
+    }
+
+    .map-section {
+        order: -1;
+    }
+
+    #map {
+        height: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    .nav-buttons {
+        display: none;
+    }
+
+    .detail-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .detail-label {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    .detail-value {
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .container {
+        padding: 0 1rem;
+    }
+
+    .header h1 {
+        font-size: 1.8rem;
+    }
+
+    .card-header {
+        padding: 1rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+}

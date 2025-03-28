@@ -1,0 +1,41 @@
+# Ignoring Python cache files
+__pycache__/
+*.pyc
+*$py.class
+
+# Virtual environment
+venv/
+
+# Logs
+logs/
+*.log
+
+# Secret environment variables
+.env
+*.secrets.json
+
+# Media and uploaded files
+media/
+
+# Database backup files
+*_backup.json
+
+# Database
+db.sqlite3
+
+# Static files
+staticfiles/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Ignoring all Django migrations except __init__.py
+CoFlex_app/migrations/*
+CoFlex_Booking_app/migrations/*
+CoFlex_Staff_app/migrations/*
+
+# Allowing __init__.py in migrations folders
+!CoFlex_app/migrations/__init__.py
+!CoFlex_Booking_app/migrations/__init__.py
+!CoFlex_Staff_app/migrations/__init__.py

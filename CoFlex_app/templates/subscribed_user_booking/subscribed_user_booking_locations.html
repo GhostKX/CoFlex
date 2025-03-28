@@ -1,0 +1,920 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoFlex Carousel</title>
+    <link rel="stylesheet" href="{% static 'CoFlex_app/css/subscribed_user_booking_css/subscribed_user_booking_locations.css' %}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="{% static 'CoFlex_app/favicon/favicon.png' %}" type="image/x-icon">
+
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+         crossorigin="">
+    </script>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+    <style>
+        #map{
+         height: 600px;
+         width: 1000px;
+         }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="brand-section">
+            <a rel="icon" href="{% url 'user_home' user_id=user.id %}" class="logo">
+                <span class="material-icons">motion_photos_auto</span>
+                <span>CoFlex</span>
+            </a>
+        </div>
+        <div class="nav-buttons">
+            <a href="{% url 'user_home' user_id=user.id %}" class="nav-btn">
+                <span class="material-icons">home</span>
+                <span>Home</span>
+            </a>
+            <a href="{% url 'user_read_profile' user_id=user.id %}" class="nav-btn">
+                <span class="material-icons">account_circle</span>
+                <span>Profile</span>
+            </a>
+            <a href="{% url 'locations' user_id=user.id %}" class="nav-btn active">
+                <span class="material-icons">event</span>
+                <span>Booking</span>
+            </a>
+            <a href="{% url 'subscribed_user_all_bookings' user_id=user.id %}" class="nav-btn">
+                <span class="material-icons">history</span>
+                <span>History</span>
+            </a>
+            <a href="{% url 'user_recent_actions_history' user_id=user.id %}" class="nav-btn">
+                <span class="material-icons">update</span>
+                <span>Recent Actions</span>
+            </a>
+            <a href="{% url 'user_settings' user_id=user.id %}" class="nav-btn">
+                <span class="material-icons">settings</span>
+                <span>Settings</span>
+            </a>
+            <a href="{% url 'logout_user' %}" class="nav-btn logout">
+                <span class="material-icons">logout</span>
+                <span>Log Out</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="hero-section">
+        <div class="background-container">
+            <div class="slides-wrapper">
+                <!--c-space-->
+                <div class="slide active">
+                    <div class="image-frame">
+                        <div class="image-overlay"></div>
+                        <img src="{% static 'CoFlex_app/location_images/c-space_chust.png' %}" class="bg-image" alt="C-Space">
+                    </div>
+                    <div class="logo-frame">
+                        <img src="{% static 'CoFlex_app/logos/c-space.png' %}" class="space-logo" alt="C-Space Logo">
+                    </div>
+                </div>
+
+                <!--bb-->
+                <div class="slide">
+                    <div class="image-frame">
+                        <div class="image-overlay"></div>
+                        <img src="{% static 'CoFlex_app/location_images/bb.jpg' %}" class="bg-image" alt="BB Works">
+                    </div>
+                    <div class="logo-frame">
+                        <img src="{% static 'CoFlex_app/logos/bb-works.png' %}" class="space-logo" alt="BB Works Logo">
+                    </div>
+                </div>
+
+                <!--groundzero_kitob_olami-->
+                <div class="slide">
+                    <div class="image-frame">
+                        <div class="image-overlay"></div>
+                        <img src="{% static 'CoFlex_app/location_images/groundzero_kitob_olami.png' %}" class="bg-image" alt="Ground Zero">
+                    </div>
+                    <div class="logo-frame">
+                        <img src="{% static 'CoFlex_app/logos/groundzero.png' %}" class="space-logo" alt="Ground Zero Logo">
+                    </div>
+                </div>
+
+                <!--hub-->
+                <div class="slide">
+                    <div class="image-frame">
+                        <div class="image-overlay"></div>
+                        <img src="{% static 'CoFlex_app/location_images/hub.jpg' %}" class="bg-image" alt="Hub">
+                    </div>
+                    <div class="logo-frame">
+                        <img src="{% static 'CoFlex_app/logos/hub_2_2.png' %}" class="space-logo" alt="Hub Logo">
+                    </div>
+                </div>
+
+                <!--impulse-->
+                <div class="slide">
+                    <div class="image-frame">
+                        <div class="image-overlay"></div>
+                        <img src="{% static 'CoFlex_app/location_images/impulse.jpg' %}" class="bg-image" alt="Impulse">
+                    </div>
+                    <div class="logo-frame">
+                        <img src="{% static 'CoFlex_app/logos/impulse_2.png' %}" class="space-logo" alt="Impulse Logo">
+                    </div>
+                </div>
+
+                <!--u-enter-->
+                <div class="slide">
+                    <div class="image-frame">
+                        <div class="image-overlay"></div>
+                        <img src="{% static 'CoFlex_app/location_images/u-enter.jpg' %}" class="bg-image" alt="U-Enter">
+                    </div>
+                    <div class="logo-frame">
+                        <img src="{% static 'CoFlex_app/logos/u-enter_2.png' %}" class="space-logo" alt="U-Enter Logo">
+                    </div>
+                </div>
+
+                <!--impact-hub-->
+                <div class="slide">
+                    <div class="image-frame">
+                        <div class="image-overlay"></div>
+                        <img src="{% static 'CoFlex_app/location_images/impact-hub-2.jpg' %}" class="bg-image" alt="C-Space Yunusabad">
+                    </div>
+                    <div class="logo-frame">
+                        <img src="{% static 'CoFlex_app/logos/impact-hub-2.png' %}" class="space-logo" alt="C-Space Logo">
+                    </div>
+                </div>
+
+                <!--west-->
+                <div class="slide">
+                    <div class="image-frame">
+                        <div class="image-overlay"></div>
+                        <img src="{% static 'CoFlex_app/location_images/west.jpg' %}" class="bg-image" alt="West">
+                    </div>
+                    <div class="logo-frame">
+                        <img src="{% static 'CoFlex_app/logos/wiut_2.png' %}" class="space-logo" alt="West Logo">
+                    </div>
+                </div>
+
+                <!--c-space-labzak-->
+                <div class="slide">
+                    <div class="image-frame">
+                        <div class="image-overlay"></div>
+                        <img src="{% static 'CoFlex_app/location_images/c-space_labzak.png' %}" class="bg-image" alt="C-Space Labzak">
+                    </div>
+                    <div class="logo-frame">
+                        <img src="{% static 'CoFlex_app/logos/c-space.png' %}" class="space-logo" alt="C-Space Logo">
+                    </div>
+                </div>
+
+                <!--bb_2-->
+                <div class="slide">
+                    <div class="image-frame">
+                        <div class="image-overlay"></div>
+                        <img src="{% static 'CoFlex_app/location_images/bb_2.jpg' %}" class="bg-image" alt="BB Works 2">
+                    </div>
+                    <div class="logo-frame">
+                        <img src="{% static 'CoFlex_app/logos/bb-works.png' %}" class="space-logo" alt="BB Works Logo">
+                    </div>
+                </div>
+
+                <!--groundzero_minor-->
+                <div class="slide">
+                    <div class="image-frame">
+                        <div class="image-overlay"></div>
+                        <img src="{% static 'CoFlex_app/location_images/groundzero_minor.jpg' %}" class="bg-image" alt="Ground Zero Minor">
+                    </div>
+                    <div class="logo-frame">
+                        <img src="{% static 'CoFlex_app/logos/groundzero.png' %}" class="space-logo" alt="Ground Zero Logo">
+                    </div>
+                </div>
+
+                <!--impact-hub-2-->
+                <div class="slide">
+                    <div class="image-frame">
+                        <div class="image-overlay"></div>
+                        <img src="{% static 'CoFlex_app/location_images/impact-hub.jpg' %}" class="bg-image" alt="C-Space Yunusabad">
+                    </div>
+                    <div class="logo-frame">
+                        <img src="{% static 'CoFlex_app/logos/impact-hub-2.png' %}" class="space-logo" alt="C-Space Logo">
+                    </div>
+                </div>
+
+                <!--c-space-yunusabad-->
+                <div class="slide">
+                    <div class="image-frame">
+                        <div class="image-overlay"></div>
+                        <img src="{% static 'CoFlex_app/location_images/c-space_yunusabad.png' %}" class="bg-image" alt="C-Space Yunusabad">
+                    </div>
+                    <div class="logo-frame">
+                        <img src="{% static 'CoFlex_app/logos/c-space.png' %}" class="space-logo" alt="C-Space Logo">
+                    </div>
+                </div>
+
+                <!--hub_2-->
+                <div class="slide">
+                    <div class="image-frame">
+                        <div class="image-overlay"></div>
+                        <img src="{% static 'CoFlex_app/location_images/hub_2.jpg' %}" class="bg-image" alt="Hub 2">
+                    </div>
+                    <div class="logo-frame">
+                        <img src="{% static 'CoFlex_app/logos/hub_2_2.png' %}" class="space-logo" alt="Hub Logo">
+                    </div>
+                </div>
+
+                <!--impulse_2-->
+                <div class="slide">
+                    <div class="image-frame">
+                        <div class="image-overlay"></div>
+                        <img src="{% static 'CoFlex_app/location_images/impulse_2.jpeg' %}" class="bg-image" alt="Impulse 2">
+                    </div>
+                    <div class="logo-frame">
+                        <img src="{% static 'CoFlex_app/logos/impulse_2.png' %}" class="space-logo" alt="Impulse Logo">
+                    </div>
+                </div>
+
+                <!--c-space-elbek-->
+                <div class="slide">
+                    <div class="image-frame">
+                        <div class="image-overlay"></div>
+                        <img src="{% static 'CoFlex_app/location_images/c-space_elbek.png' %}" class="bg-image" alt="C-Space Elbek">
+                    </div>
+                    <div class="logo-frame">
+                        <img src="{% static 'CoFlex_app/logos/c-space.png' %}" class="space-logo" alt="C-Space Logo">
+                    </div>
+                </div>
+
+                <!--groundzero-sharq-->
+                <div class="slide">
+                    <div class="image-frame">
+                        <div class="image-overlay"></div>
+                        <img src="{% static 'CoFlex_app/location_images/groundzero_sharq.jpg' %}" class="bg-image" alt="Ground Zero Sharq">
+                    </div>
+                    <div class="logo-frame">
+                        <img src="{% static 'CoFlex_app/logos/groundzero.png' %}" class="space-logo" alt="Ground Zero Logo">
+                    </div>
+                </div>
+
+                <!--c-space-airport-->
+                <div class="slide">
+                    <div class="image-frame">
+                        <div class="image-overlay"></div>
+                        <img src="{% static 'CoFlex_app/location_images/c-space_airport.png' %}" class="bg-image" alt="C-Space Airport">
+                    </div>
+                    <div class="logo-frame">
+                        <img src="{% static 'CoFlex_app/logos/c-space.png' %}" class="space-logo" alt="C-Space Logo">
+                    </div>
+                </div>
+
+                <!--west_2-->
+                <div class="slide">
+                    <div class="image-frame">
+                        <div class="image-overlay"></div>
+                        <img src="{% static 'CoFlex_app/location_images/west_2.jpg' %}" class="bg-image" alt="West 2">
+                    </div>
+                    <div class="logo-frame">
+                        <img src="{% static 'CoFlex_app/logos/wiut_2.png' %}" class="space-logo" alt="West Logo">
+                    </div>
+                </div>
+            </div>
+            <div class="navigation-dots"></div>
+        </div>
+    </div>
+
+    <!-- Nearest Locations Section -->
+    <section class="nearest-locations">
+        <h2 class="section-title">Nearest Available Spaces</h2>
+        <div class="location-cards" id="locationCards"></div>
+    </section>
+
+    <!-- Map title -->
+    <h1 class="map-subtitle">Explore Nearby Locations</h1>
+
+    <!-- Existing map div -->
+    <div id="map"></div>
+    <br>
+    <br>
+
+    <div class="container">
+        <h1 class="main-title">All CoFlex Locations</h1>
+
+        <!-- C-Space Section -->
+        <div class="location-section">
+            <h2 class="section-title">C-Space Locations</h2>
+            <div class="locations-grid">
+                {% for location in c_space_locations %}
+                <div class="location-card">
+                    <img src="{{ location.location_details.image_path }}" alt="{{ location.location_name }}" class="location-image">
+                    <div class="location-content">
+                        <h3 class="location-name">{{ location.location_name }}</h3>
+                        <div class="location-info">
+                            <span class="material-icons">location_on</span>
+                            <span>{{ location.location_details.address }}</span>
+                        </div>
+                        <div class="location-info">
+                            <span class="material-icons">access_time</span>
+                            <span>{{ location.location_details.working_hours }}</span>
+                        </div>
+                        <div class="location-info">
+                            <span class="material-icons">phone</span>
+                            <span>{{ location.location_details.contact_phone }}</span>
+                        </div>
+                        <div class="location-info website">
+                            <span class="material-icons">public</span>
+                            <a href="{{ location.location_details.website }}" target="_blank">Website</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Ground Zero Section -->
+        <div class="location-section">
+            <h2 class="section-title">Ground Zero Locations</h2>
+            <div class="locations-grid">
+                {% for location in ground_zero_locations %}
+                <div class="location-card">
+                    <img src="{{ location.location_details.image_path }}" alt="{{ location.location_name }}" class="location-image">
+                    <div class="location-content">
+                        <h3 class="location-name">{{ location.location_name }}</h3>
+                        <div class="location-info">
+                            <span class="material-icons">location_on</span>
+                            <span>{{ location.location_details.address }}</span>
+                        </div>
+                        <div class="location-info">
+                            <span class="material-icons">access_time</span>
+                            <span>{{ location.location_details.working_hours }}</span>
+                        </div>
+                        <div class="location-info">
+                            <span class="material-icons">phone</span>
+                            <span>{{ location.location_details.contact_phone }}</span>
+                        </div>
+                        <div class="location-info website">
+                            <span class="material-icons">public</span>
+                            <a href="{{ location.location_details.website }}" target="_blank">Website</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Impulse BB and HUB Sections -->
+        <div class="location-section">
+            <h2 class="section-title">Other Partner Locations</h2>
+            <div class="locations-grid">
+                {% for location in other_locations %}
+                <div class="location-card">
+                    <img src="{{ location.location_details.image_path }}" alt="{{ location.location_name }}" class="location-image">
+                    <div class="location-content">
+                        <h3 class="location-name">{{ location.location_name }}</h3>
+                        <div class="location-info">
+                            <span class="material-icons">location_on</span>
+                            <span>{{ location.location_details.address }}</span>
+                        </div>
+                        <div class="location-info">
+                            <span class="material-icons">access_time</span>
+                            <span>{{ location.location_details.working_hours }}</span>
+                        </div>
+                        <div class="location-info">
+                            <span class="material-icons">phone</span>
+                            <span>{{ location.location_details.contact_phone }}</span>
+                        </div>
+                        <div class="location-info website">
+                            <span class="material-icons">public</span>
+                            <a href="{{ location.location_details.website }}" target="_blank">Website</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <h1 class="map-title">All CoFlex Locations</h1>
+    <div id="allLocationsMap"></div>
+
+    <footer class="footer">
+        <p>&copy; {% now "Y" %} CoFlex. All rights reserved.</p>
+    </footer>
+    <script>
+        var userId = "{{ user.id }}";
+        var map = L.map('map').setView([41.2995, 69.2401], 15); // Set initial view to a default location
+
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 20,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        if (!navigator.geolocation) {
+            console.log("Your browser does not support geolocation feature!");
+            handleLocationDenied();
+        } else {
+            navigator.geolocation.watchPosition(getPosition, error);
+        }
+
+        let userMarker = null;
+        let userCircle = null;
+        let locationMarkers = [];
+        let routingControl = null; // To store the routing control instance
+
+        // Custom icon for the user's live location (professional-looking)
+        const userIcon = L.icon({
+            iconUrl: '{% static "CoFlex_app/icons/user_location.png" %}', // Update to a professional icon
+            iconSize: [50, 50], // Adjust size for better visibility
+            iconAnchor: [20, 40], // Center the icon
+        });
+
+        function getPosition(position) {
+            var lat = position.coords.latitude;
+            var lng = position.coords.longitude;
+            var accuracy = position.coords.accuracy;
+
+            // Remove previous user marker and circle if they exist
+            if (userMarker) {
+                map.removeLayer(userMarker);
+            }
+            if (userCircle) {
+                map.removeLayer(userCircle);
+            }
+
+            // Add a custom marker for the user's location
+            userMarker = L.marker([lat, lng], { icon: userIcon }).addTo(map);
+
+            // Add a circle to represent the accuracy of the user's location
+            userCircle = L.circle([lat, lng], {
+                radius: accuracy,
+                color: 'blue',
+                fillColor: '#30f',
+                fillOpacity: 0.2
+            }).addTo(map);
+
+            // Adjust the map view to include the user's location and the circle
+            if (!map.getBounds().contains(userMarker.getLatLng())) {
+                map.setView([lat, lng], 15);
+            }
+
+            console.log(`Latitude: ${lat}\nLongitude: ${lng}\nAccuracy: ${accuracy}`);
+
+            // Fetch nearest locations
+            fetch(`get_user_location/?latitude=${lat}&longitude=${lng}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Nearest Locations:", data.nearest_locations);
+                    console.log("All Locations:", data.all_locations);
+                    updateLocationMarkers(data.nearest_locations);
+                })
+                .catch(error => console.error("Error updating location:", error));
+        }
+
+
+        function updateLocationCards(locations) {
+            const locationCardsContainer = document.getElementById('locationCards');
+            locationCardsContainer.innerHTML = ''; // Clear existing cards
+
+            locations.forEach((location) => {
+                const availabilityClass = location[1].available_spots > 10 ? 'high' :
+                                        location[1].available_spots > 5 ? 'medium' : 'low';
+
+                const card = document.createElement('div');
+                card.className = 'location-card';
+                card.innerHTML = `
+                    <img src="${location[1].image_path}" alt="${location[1].name}" class="card-image">
+                    <div class="card-content">
+                        <h3 class="card-title">${location[1].name}</h3>
+                        <div class="card-info">
+                            <div class="info-item">
+                                <span class="material-icons">location_on</span>
+                                <span>${location[1].address}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="material-icons">access_time</span>
+                                <span>${location[1].working_hours}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="material-icons">phone</span>
+                                <span>${location[1].contact_phone}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="material-icons">directions_walk</span>
+                                <span>${location[1].distance_km} km away</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="material-icons">public</span>
+                                <a href="${location[1].website}" target="_blank" class="website-link">Website</a>
+                            </div>
+                        </div>
+                        <div class="card-buttons">
+                            <a href="${location[1].booking_url}" class="card-btn book-btn">Book Now</a>
+                        </div>
+                    </div>
+                `;
+
+                // Add click event to the card
+                card.addEventListener('click', () => {
+
+                    // For now, just center the map on this location
+                    map.setView([location[1].latitude, location[1].longitude], 18);
+                    // Find and click the corresponding marker
+                    locationMarkers.forEach(marker => {
+                        if (marker.getLatLng().lat === location[1].latitude &&
+                            marker.getLatLng().lng === location[1].longitude) {
+                            marker.openPopup();
+                        }
+                    });
+
+                    // Show route if we have user's location
+                    if (userMarker) {
+                        showShortestPath(
+                            userMarker.getLatLng(),
+                            L.latLng(location[1].latitude, location[1].longitude)
+                        );
+                    }
+
+                    // Smooth scroll to map
+                    document.getElementById('map').scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                });
+
+
+                locationCardsContainer.appendChild(card);
+            });
+        }
+
+
+
+
+        function updateLocationMarkers(locations) {
+            locationMarkers.forEach(marker => map.removeLayer(marker)); // Remove existing markers
+            locationMarkers = [];
+
+            locations.forEach((location, index) => {
+                let lat = location[1].latitude;
+                let lng = location[1].longitude;
+                let iconPath = location[1].icon_path; // Get the icon path from the location data
+
+                // Create a custom icon for the location
+                const locationIcon = L.icon({
+                    iconUrl: iconPath, // Use the dynamic icon path
+                    iconSize: [45, 45], // Size of the icon
+                    iconAnchor: [15, 30], // Anchor point of the icon
+                });
+
+                // Create custom popup content
+                const availabilityClass = location[1].available_spots > 10 ? 'high' :
+                                        location[1].available_spots > 5 ? 'medium' : 'low';
+
+                const popupContent = `
+                    <div class="custom-popup">
+                        <img src="${location[1].image_path}" alt="${location[1].name}">
+                        <h3>${location[1].name}</h3>
+
+                        <div class="info-row">
+                            <span class="icon">📍</span>
+                            <span>${location[1].address}</span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="icon">📞</span>
+                            <span>${location[1].contact_phone}</span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="icon">⏰</span>
+                            <span>${location[1].working_hours}</span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="icon">🚶</span>
+                            <span>${location[1].distance_km} km away</span>
+                        </div>
+
+                        <div class="availability ${availabilityClass}">
+                            ${location[1].available_spots} spots available today
+                        </div>
+
+                        <div class="popup-buttons">
+                            <a href="${location[1].booking_url}" class="popup-btn book-btn">Book Now</a>
+                        </div>
+                    </div>
+                `;
+
+
+
+                let marker = L.marker([lat, lng], { icon: locationIcon })
+                    .bindPopup(popupContent, {
+                        maxWidth: 300,
+                        className: 'custom-popup-container'
+                    })
+                    .addTo(map);
+
+                marker.on('click', function() {
+                    showShortestPath(userMarker.getLatLng(), marker.getLatLng());
+                });
+
+                locationMarkers.push(marker);
+            });
+
+            if (userMarker) {
+                let allMarkers = [userMarker, ...locationMarkers];
+                let group = L.featureGroup(allMarkers);
+                map.fitBounds(group.getBounds(), { padding: [50, 50] });
+            }
+            // Add this line at the end of the function
+            updateLocationCards(locations);
+        }
+
+        function showShortestPath(start, end) {
+            // Remove existing routing control if it exists
+            if (routingControl) {
+                map.removeControl(routingControl);
+            }
+
+            // Check if L.Routing is available
+            if (!L.Routing) {
+                console.error("Leaflet Routing Machine is not loaded.");
+                return;
+            }
+
+            // Initialize the routing control
+            routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(start.lat, start.lng), // User's location
+                    L.latLng(end.lat, end.lng)      // Clicked location
+                ],
+                routeWhileDragging: true, // Update the route while dragging waypoints
+                showAlternatives: false,  // Do not show alternative routes
+                addWaypoints: false,      // Disable adding waypoints
+                draggableWaypoints: false, // Disable dragging waypoints
+                createMarker: function() { return null; }, // Disable default markers
+                show: false, // Disable the instructions panel
+                lineOptions: {
+                    styles: [
+                        {
+                            color: 'blue', // Change the route color to blue
+                            opacity: 1,  // Adjust the opacity of the route line
+                            weight: 5      // Adjust the thickness of the route line
+                        }
+                    ]
+                }
+            }).addTo(map);
+        }
+
+        function error(err) {
+            handleLocationDenied();
+        }
+
+        function handleLocationDenied() {
+            const nearestLocations = document.querySelector(".nearest-locations")
+            if (nearestLocations) nearestLocations.style.display = "none";
+
+            // Hide the map and its title
+            const mapTitle = document.querySelector(".map-subtitle");
+            const mapElement = document.getElementById("map");
+            if (mapTitle) mapTitle.style.display = "none";
+            if (mapElement) mapElement.style.display = "none";
+
+            // Adjust the margin of the container below to move up smoothly
+            const container = document.querySelector(".container");
+            if (container) container.style.marginTop = "0px";
+        }
+
+    </script>
+    <script>
+        // All locations map with a better default view of Tashkent
+         var allLocationsMap = L.map('allLocationsMap').setView([41.2995, 69.2401], 12);
+         let allLocationsRoutingControl = null;
+         let userMarkerAll = null;
+         let userCircleAll = null;
+
+         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+             maxZoom: 20,
+             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+         }).addTo(allLocationsMap);
+
+         // All locations data from Django context
+         const allLocationsData = {{ all_locations_data|safe }};
+         const allLocationMarkers = [];
+         let userLocation = null;
+
+         // User's icon
+         const userIconAll = L.icon({
+             iconUrl: '{% static "CoFlex_app/icons/user_location.png" %}',
+             iconSize: [50, 50],
+             iconAnchor: [25, 25]
+         });
+
+         // Popup content
+         function createPopupContent(location, userDistance = null) {
+             const availabilityClass = location.available_spots > 10 ? 'high' :
+                                     location.available_spots > 5 ? 'medium' : 'low';
+
+             const distanceHtml = userDistance !== null ? `
+                 <div class="info-row" style="margin: 8px 0;">
+                     <span class="icon">🚶</span>
+                     <span style="font-size: 14px;">${userDistance.toFixed(2)} km away</span>
+                 </div>
+             ` : '';
+
+             return `
+                 <div class="custom-popup" style="max-width: 280px; padding: 15px;">
+                     <img src="${location.image_path}" alt="${location.name}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px;">
+                     <h3 style="margin: 10px 0; font-size: 18px;">${location.name}</h3>
+
+                     <div class="info-row" style="margin: 8px 0;">
+                         <span class="icon">📍</span>
+                         <span style="font-size: 14px;">${location.address}</span>
+                     </div>
+
+                     <div class="info-row" style="margin: 8px 0;">
+                         <span class="icon">📞</span>
+                         <span style="font-size: 14px;">${location.contact_phone}</span>
+                     </div>
+
+                     <div class="info-row" style="margin: 8px 0;">
+                         <span class="icon">⏰</span>
+                         <span style="font-size: 14px;">${location.working_hours}</span>
+                     </div>
+
+                     ${distanceHtml}
+
+                     <div class="availability ${availabilityClass}" style="margin: 10px 0; padding: 8px; text-align: center; border-radius: 6px; background-color: ${availabilityClass === 'high' ? '#e3fcef' : availabilityClass === 'medium' ? '#fff3cd' : '#ffe3e3'}">
+                         ${location.available_spots} spots available today
+                     </div>
+
+                     <div class="popup-buttons" style="text-align: center; margin-top: 10px;">
+                         <a href="${location.booking_url}" class="popup-btn book-btn" style="display: inline-block; padding: 8px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Book Now</a>
+                     </div>
+                 </div>
+             `;
+         }
+
+         // Calculate distance between two points
+         function calculateDistance(point1, point2) {
+             return L.latLng(point1).distanceTo(L.latLng(point2)) / 1000; // Convert to kilometers
+         }
+
+         // Update all markers with distances
+         function updateAllMarkersWithDistances(userLoc) {
+             allLocationMarkers.forEach(marker => {
+                 const location = marker.locationData;
+                 const distance = calculateDistance(
+                     userLocation,
+                     [location.latitude, location.longitude]
+                 );
+                 marker.setPopupContent(createPopupContent(location, distance));
+             });
+         }
+
+         // Show the shortest path
+         function ShowPath(start, end) {
+             if (allLocationsRoutingControl) {
+                 allLocationsMap.removeControl(allLocationsRoutingControl);
+             }
+
+             allLocationsRoutingControl = L.Routing.control({
+                 waypoints: [
+                     L.latLng(start.lat, start.lng),
+                     L.latLng(end.lat, end.lng)
+                 ],
+                 routeWhileDragging: false,
+                 showAlternatives: false,
+                 addWaypoints: false,
+                 draggableWaypoints: false,
+                 createMarker: function() { return null; },
+                 show: false,
+                 lineOptions: {
+                     styles: [{
+                         color: 'blue',
+                         opacity: 0.8,
+                         weight: 5
+                     }]
+                 }
+             }).addTo(allLocationsMap);
+         }
+
+         // Markers for all locations
+         allLocationsData.forEach(location => {
+             const locationIcon = L.icon({
+                 iconUrl: location.icon_path,
+                 iconSize: [45, 45],
+                 iconAnchor: [22, 45],
+                 popupAnchor: [0, -45]
+             });
+
+             const marker = L.marker([location.latitude, location.longitude], { icon: locationIcon })
+                 .bindPopup(createPopupContent(location))
+                 .addTo(allLocationsMap);
+
+             marker.locationData = location;
+
+             // Click handler for routing
+             marker.on('click', function() {
+                 if (userLocation) {
+                     ShowPath(userLocation, {
+                         lat: location.latitude,
+                         lng: location.longitude
+                     });
+                 }
+             });
+
+             allLocationMarkers.push(marker);
+         });
+
+         // User's geolocation
+         if (navigator.geolocation) {
+             navigator.geolocation.watchPosition(position => {
+                 userLocation = {
+                     lat: position.coords.latitude,
+                     lng: position.coords.longitude
+                 };
+
+                 // User marker
+                 if (userMarkerAll) {
+                     allLocationsMap.removeLayer(userMarkerAll);
+                 }
+                 if (userCircleAll) {
+                     allLocationsMap.removeLayer(userCircleAll);
+                 }
+
+                 // User marker
+                 userMarkerAll = L.marker([userLocation.lat, userLocation.lng], {
+                     icon: userIconAll
+                 }).addTo(allLocationsMap);
+
+                 // Accuracy circle
+                 userCircleAll = L.circle([userLocation.lat, userLocation.lng], {
+                     radius: position.coords.accuracy,
+                     color: 'blue',
+                     fillColor: '#30f',
+                     fillOpacity: 0.2
+                 }).addTo(allLocationsMap);
+
+                 // All markers with distances
+                 updateAllMarkersWithDistances(userLocation);
+
+                 const allPoints = [...allLocationMarkers, userMarkerAll];
+                 const group = L.featureGroup(allPoints);
+                 allLocationsMap.fitBounds(group.getBounds(), { padding: [50, 50] });
+             }, error => {
+                 console.error("Error getting user location:", error);
+             }, {
+                 enableHighAccuracy: true,
+                 maximumAge: 30000,
+                 timeout: 27000
+             });
+         }
+
+         // Handle location card clicks
+         document.querySelectorAll('.location-card').forEach(card => {
+             card.addEventListener('click', function() {
+                 const locationName = this.querySelector('.location-name').textContent;
+                 const marker = allLocationMarkers.find(m =>
+                     m.locationData.name.toLowerCase() === locationName.toLowerCase()
+                 );
+
+                 if (marker) {
+                     document.getElementById('allLocationsMap').scrollIntoView({
+                         behavior: 'smooth',
+                         block: 'center'
+                     });
+
+                     setTimeout(() => {
+                         allLocationsMap.setView(marker.getLatLng(), 18, {
+                             animate: true,
+                             duration: 1
+                         });
+                         marker.openPopup();
+
+                         if (userLocation) {
+                             ShowPath(userLocation, {
+                                 lat: marker.locationData.latitude,
+                                 lng: marker.locationData.longitude
+                             });
+                         }
+                     }, 800);
+                 }
+             });
+         });
+
+         // Map view when popup opens
+         allLocationsMap.on('popupopen', function(e) {
+             const px = allLocationsMap.project(e.popup._latlng);
+             px.y -= e.popup._container.clientHeight/2;
+             allLocationsMap.panTo(allLocationsMap.unproject(px), {animate: true});
+         });
+    </script>
+    <script src="{% static 'CoFlex_app/js/subscribed_user_booking_js/subscribed_user_booking_locations.js' %}"></script>
+
+</body>
+</html>

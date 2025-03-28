@@ -1,0 +1,352 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoFlex Day Bookings</title>
+    <link rel="stylesheet" href="{% static 'CoFlex_Staff_app/css/staff_date_page.css' %}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="{% static 'CoFlex_app/favicon/favicon.png' %}" type="image/x-icon">
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body>
+    <div class="page-container">
+        {% csrf_token %}
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+            <div class="brand-section">
+                <a href="{% url 'staff_dashboard' staff_id=staff.id location_code=staff.location_code %}" class="logo">
+                    <span class="material-icons">motion_photos_auto</span>
+                    <span>CoFlex</span>
+                </a>
+            </div>
+            <div class="nav-buttons">
+                <a href="{% url 'staff_dashboard' staff_id=staff.id location_code=staff.location_code %}" class="nav-btn">
+                    <span class="material-icons">dashboard</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'staff_recent_actions_history' staff_id=staff.id location_code=staff.location_code %}" class="nav-btn">
+                    <span class="material-icons">update</span>
+                    <span>Recent Actions</span>
+                </a>
+                <a href="{% url 'logout_staff' %}" class="nav-btn logout">
+                    <span class="material-icons">logout</span>
+                    <span>Log Out</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Messages section -->
+        {% if messages %}
+        <div class="messages" role="alert" aria-live="polite">
+            {% for message in messages %}
+            <div class="message message--{{ message.tags }}">
+                {% if message.tags == 'error' %}
+                    <span class="material-icons message-icon">error_outline</span>
+                {% elif message.tags == 'success' %}
+                    <span class="material-icons message-icon">check_circle</span>
+                {% elif message.tags == 'info' %}
+                    <span class="material-icons message-icon">info</span>
+                {% endif %}
+                <span class="message-text">{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="dashboard-container">
+            <!-- Main Content Section -->
+            <main class="main-content">
+                <div class="bookings-container" id="booking-list-container">
+                    {% if all_bookings_on_selected_date %}
+                        <div class="booking-header-section">
+                            <h1 class="location-heading">{{ location_name }}</h1>
+                            <h2 class="date-subheading">Bookings for {{ selected_date|date:"F d, Y" }}</h2>
+                        </div>
+
+                        <div class="bookings-table-container">
+                            <table class="bookings-table">
+                                <thead>
+                                    <tr class="column-headers">
+                                        <th class="id-column">Booking ID</th>
+                                        <th class="name-column">Name</th>
+                                        <th class="contact-column">Contact Details</th>
+                                        <th class="time-column">Check in</th>
+                                        <th class="time-column">Check out</th>
+                                        <th class="request-column">Special Requests</th>
+                                        <th class="status-column">Status</th>
+                                        <th class="actions-column">Actions</th>
+                                    </tr>
+                                    <tr class="search-filters">
+                                        <th>
+                                            <div class="filter-input">
+                                                <input type="text" id="book-id-filter" placeholder="Search...">
+                                                <span class="material-icons filter-icon">search</span>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div class="filter-input">
+                                                <input type="text" id="name-filter" placeholder="Search name...">
+                                                <span class="material-icons filter-icon">search</span>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div class="filter-input">
+                                                <input type="text" id="contact-filter" placeholder="Search...">
+                                                <span class="material-icons filter-icon">search</span>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div class="filter-input">
+                                                <input type="text" id="checkin-filter" placeholder="HH:MM">
+                                                <span class="material-icons filter-icon">schedule</span>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div class="filter-input">
+                                                <input type="text" id="checkout-filter" placeholder="HH:MM">
+                                                <span class="material-icons filter-icon">schedule</span>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div class="filter-input">
+                                                <input type="text" id="special-request-filter" placeholder="Search requests...">
+                                                <span class="material-icons filter-icon">search</span>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div class="filter-dropdown">
+                                                <select id="status-filter">
+                                                    <option value="all">All</option>
+                                                    <option value="booked">Booked</option>
+                                                    <option value="in progress">In Progress</option>
+                                                    <option value="finished">Finished</option>
+                                                    <option value="due out">Due Out</option>
+                                                    <option value="cancelled">Cancelled</option>
+                                                </select>
+                                                <span class="material-icons dropdown-icon">expand_more</span>
+                                            </div>
+                                        </th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for booking in all_bookings_on_selected_date %}
+                                    <tr class="booking-row">
+                                        <td>{{ booking.location_booking.booking_id }}</td>
+                                        <td>
+                                            <div class="customer-info">
+                                                <span class="customer-name">{{ booking.location_booking.user_first_name }} {{ booking.location_booking.user_last_name }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="contact-info">
+                                                <span class="contact-email">{{ booking.location_booking.user_email }}</span>
+                                                <span class="contact-phone">{{ booking.location_booking.user_phone_number|default:"Not Provided" }}</span>
+                                            </div>
+                                        </td>
+                                        <td>{{ booking.start_time|time:"H:i" }}</td>
+                                        <td>{{ booking.end_time|time:"H:i" }}</td>
+                                        <td>
+                                            <div class="special-requests">
+                                                <span>{{ booking.special_requests }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="status-badge status-{{ booking.status|lower|slugify }}">
+                                                {% if booking.status|lower == 'booked' %}
+                                                    <span class="material-icons">event_available</span>
+                                                {% elif booking.status|lower == 'in progress' %}
+                                                    <span class="material-icons">hourglass_top</span>
+                                                {% elif booking.status|lower == 'finished' %}
+                                                    <span class="material-icons">task_alt</span>
+                                                {% elif booking.status|lower == 'due out' %}
+                                                    <span class="material-icons">schedule</span>
+                                                {% elif booking.status|lower == 'cancelled' %}
+                                                    <span class="material-icons">cancel</span>
+                                                {% else %}
+                                                    <span class="material-icons">help_outline</span>
+                                                {% endif %}
+                                                {{ booking.status }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a href="{% url 'booking_details_view' staff_id=staff.id location_code=location_code booking_id=booking.location_booking.booking_id %}" class="action-btn edit-btn" title="Edit Booking">
+                                                    <span class="material-icons">edit_note</span>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Expanded Card View for Mobile -->
+                        <div class="booking-cards-mobile">
+                            {% for booking in all_bookings_on_selected_date %}
+                                <div class="booking-card">
+                                    <div class="booking-card-header">
+                                        <div class="booking-id">
+                                            <span class="material-icons">confirmation_number</span>
+                                            <span>#{{ booking.location_booking.booking_id }}</span>
+                                        </div>
+                                        <div class="status-badge status-{{ booking.status|lower|slugify }}">
+                                            {% if booking.status|lower == 'booked' %}
+                                                <span class="material-icons">event_available</span>
+                                            {% elif booking.status|lower == 'in progress' %}
+                                                <span class="material-icons">hourglass_top</span>
+                                            {% elif booking.status|lower == 'finished' %}
+                                                <span class="material-icons">task_alt</span>
+                                            {% elif booking.status|lower == 'due out' %}
+                                                <span class="material-icons">schedule</span>
+                                            {% elif booking.status|lower == 'cancelled' %}
+                                                <span class="material-icons">cancel</span>
+                                            {% else %}
+                                                <span class="material-icons">help_outline</span>
+                                            {% endif %}
+                                            {{ booking.status }}
+                                        </div>
+                                    </div>
+                                    <div class="booking-card-body">
+                                        <div class="customer-details">
+                                            <div class="detail-item">
+                                                <span class="material-icons">person</span>
+                                                <span>{{ booking.location_booking.user_first_name }} {{ booking.location_booking.user_last_name }}</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="material-icons">email</span>
+                                                <span>{{ booking.location_booking.user_email }}</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="material-icons">phone</span>
+                                                <span>{{ booking.location_booking.user_phone_number|default:"Not Provided" }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="time-details">
+                                            <div class="detail-item">
+                                                <span class="material-icons">login</span>
+                                                <span>{{ booking.start_time|time:"H:i" }}</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="material-icons">logout</span>
+                                                <span>{{ booking.end_time|time:"H:i" }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="request-details">
+                                            <div class="detail-item">
+                                                <span class="material-icons">comment</span>
+                                                <span>{{ booking.special_requests }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="booking-card-footer">
+                                        <a href="{% url 'booking_details_view' staff_id=staff.id location_code=location_code booking_id=booking.location_booking.booking_id %}" class="card-btn primary-btn">
+                                            <span class="material-icons">visibility</span>
+                                            View
+                                        </a>
+                                        <a href="{% url 'booking_details_view' staff_id=staff.id location_code=location_code booking_id=booking.location_booking.booking_id %}" class="card-btn secondary-btn">
+                                            <span class="material-icons">edit</span>
+                                            Edit
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="no-bookings-container">
+                            <div class="no-bookings-message">
+                                <span class="material-icons no-bookings-icon">event_busy</span>
+                                <h3>No Bookings Found</h3>
+                                <p>There are no bookings scheduled for {{ selected_date|date:"F d, Y" }} at
+                                    <br>
+                                    {{ location_name }}.</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </main>
+        </div>
+
+        <footer class="footer">
+            <p>&copy; 2025 CoFlex. All rights reserved.</p>
+        </footer>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Filter functionality
+            const filters = {
+                bookId: document.getElementById('book-id-filter'),
+                name: document.getElementById('name-filter'),
+                contact: document.getElementById('contact-filter'),
+                checkin: document.getElementById('checkin-filter'),
+                checkout: document.getElementById('checkout-filter'),
+                specialRequest: document.getElementById('special-request-filter'),
+                status: document.getElementById('status-filter')
+            };
+
+            const rows = document.querySelectorAll('.booking-row');
+
+            // Function to filter the table
+            function filterTable() {
+                const filterValues = {
+                    bookId: filters.bookId?.value.toLowerCase() || '',
+                    name: filters.name?.value.toLowerCase() || '',
+                    contact: filters.contact?.value.toLowerCase() || '',
+                    checkin: filters.checkin?.value.toLowerCase() || '',
+                    checkout: filters.checkout?.value.toLowerCase() || '',
+                    specialRequest: filters.specialRequest?.value.toLowerCase() || '',
+                    status: filters.status?.value.toLowerCase() || 'all'
+                };
+
+                rows.forEach(row => {
+                    const rowValues = {
+                        bookId: row.cells[0].textContent.toLowerCase(),
+                        name: row.cells[1].textContent.toLowerCase(),
+                        contact: row.cells[2].textContent.toLowerCase(),
+                        checkin: row.cells[3].textContent.toLowerCase(),
+                        checkout: row.cells[4].textContent.toLowerCase(),
+                        specialRequest: row.cells[5].textContent.toLowerCase(),
+                        status: row.cells[6].textContent.toLowerCase()
+                    };
+
+                    const showRow =
+                        rowValues.bookId.includes(filterValues.bookId) &&
+                        rowValues.name.includes(filterValues.name) &&
+                        rowValues.contact.includes(filterValues.contact) &&
+                        rowValues.checkin.includes(filterValues.checkin) &&
+                        rowValues.checkout.includes(filterValues.checkout) &&
+                        rowValues.specialRequest.includes(filterValues.specialRequest) &&
+                        (filterValues.status === 'all' || rowValues.status.includes(filterValues.status));
+
+                    row.style.display = showRow ? '' : 'none';
+                });
+            }
+
+            // Adding event listeners to all filters
+            Object.values(filters).forEach(filter => {
+                if (filter) {
+                    filter.addEventListener(filter.tagName === 'SELECT' ? 'change' : 'input', filterTable);
+                }
+            });
+
+            // Showing messages and auto-hide after 5 seconds
+            const messages = document.querySelectorAll('.message');
+            if (messages.length > 0) {
+                setTimeout(() => {
+                    messages.forEach(message => {
+                        message.style.opacity = '0';
+                        setTimeout(() => {
+                            message.style.display = 'none';
+                        }, 500);
+                    });
+                }, 5000);
+            }
+        });
+    </script>
+</body>
+</html>

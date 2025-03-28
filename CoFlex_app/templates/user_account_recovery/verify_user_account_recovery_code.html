@@ -1,0 +1,110 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Verify your CoFlex account to get started with our platform">
+    <title>Account Verification - CoFlex</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="icon" href="{% static 'CoFlex_app/favicon/favicon.png' %}" type="image/x-icon" >
+    <link rel="stylesheet" href="{% static 'CoFlex_app/css/user_account_recovery_css/verify_user_account_recovery_code.css' %}">
+</head>
+<body>
+    <div class="page-container">
+        <div class="verification-container">
+            <!-- Brand section -->
+            <div class="brand">
+                <a href="{% url 'home' %}" class="brand-link" aria-label="Return to CoFlex homepage">
+                    <span class="material-icons brand-icon" aria-hidden="true">motion_photos_auto</span>
+                    <span class="brand-text">CoFlex</span>
+                </a>
+            </div>
+
+            <!-- Header section -->
+            <div class="header">
+                <h1 class="title">Verify Your Account</h1>
+                <p class="subtitle">We've sent a 6-digit verification code to <strong class="user-email">{{ user.email }}</strong></p>
+            </div>
+
+            <!-- Messages section -->
+            {% if messages %}
+            <div class="messages" role="alert" aria-live="polite">
+                {% for message in messages %}
+                <div class="message message--{{ message.tags }}">
+                    {% if message.tags == 'error' %}
+                        <span class="material-icons message-icon">error_outline</span>
+                    {% elif message.tags == 'success' %}
+                        <span class="material-icons message-icon">check_circle</span>
+                    {% elif message.tags == 'info' %}
+                        <span class="material-icons message-icon">info</span>
+                    {% endif %}
+                    <span class="message-text">{{ message }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Verification form -->
+            <form method="POST" class="verification-form" novalidate>
+                {% csrf_token %}
+                <div class="verification-code">
+                    <label for="verification_code" class="code-label">Enter Verification Code</label>
+                    <div class="code-input-wrapper">
+                        <input
+                            type="text"
+                            name="verification_code"
+                            id="verification_code"
+                            class="code-input {% if form.verification_code.errors %}input--error{% endif %}"
+                            placeholder="123456"
+                            maxlength="6"
+                            minlength="6"
+                            pattern="[0-9]*"
+                            inputmode="numeric"
+                            autocomplete="one-time-code"
+                            required
+                            aria-describedby="code-error code-help"
+                        >
+                        <span class="material-icons input-icon" aria-hidden="true">pin</span>
+                    </div>
+                    {% if form.verification_code.errors %}
+                    <div class="error-message" id="code-error">
+                        {{ form.verification_code.errors|join:", " }}
+                    </div>
+                    {% endif %}
+                    <div class="help-text" id="code-help">
+                        Enter the 6-digit code we sent to your email
+                    </div>
+                </div>
+
+                <button type="submit" class="verify-button">
+                    <span class="material-icons button-icon" aria-hidden="true">verified_user</span>
+                    <span class="button-text">Verify Account</span>
+                </button>
+            </form>
+
+            <!-- Footer section -->
+            <div class="footer">
+                <div class="resend-code">
+                    <p class="timer" id="resend-timer">Resend code in <span>59</span> seconds</p>
+                    <form method="POST" action="{% url 'verify_user_account_recovery_code_resend_code' user_id=user.id %}" class="resend-form" id="resend-form" style="display: none;">
+                        {% csrf_token %}
+                        <button type="submit" class="resend-button">
+                            Resend verification code
+                        </button>
+                    </form>
+                </div>
+                <div class="footer-links">
+                    {#<a href="{% url 'support' %}" class="footer-link">Need help?</a>#}
+                    <a href="{% url 'home' %}"
+                       data-user-id="{{ user.id }}" class="footer-link">Back</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'CoFlex_app/js/user_account_recovery_js/verify_user_account_recovery_code.js' %}" defer></script>
+</body>
+</html>

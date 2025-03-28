@@ -1,0 +1,466 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recent Actions - CoFlex</title>
+    <link rel="stylesheet" href="{% static 'CoFlex_Staff_app/css/staff_recent_actions.css' %}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="{% static 'CoFlex_app/favicon/favicon.png' %}" type="image/x-icon">
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body>
+    {{ redirect_to_login_immediately }}
+    <div class="page-container">
+        {% csrf_token %}
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+            <div class="brand-section">
+                <a href="{% url 'staff_dashboard' staff_id=staff.id location_code=staff.location_code %}" class="logo">
+                    <span class="material-icons">motion_photos_auto</span>
+                    <span>CoFlex</span>
+                </a>
+            </div>
+            <div class="nav-buttons">
+                <a href="{% url 'staff_dashboard' staff_id=staff.id location_code=staff.location_code %}" class="nav-btn">
+                    <span class="material-icons">dashboard</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'staff_recent_actions_history' staff_id=staff.id location_code=staff.location_code %}" class="nav-btn active">
+                    <span class="material-icons">update</span>
+                    <span>Recent Actions</span>
+                </a>
+                <a href="{% url 'logout_staff' %}" class="nav-btn logout">
+                    <span class="material-icons">logout</span>
+                    <span>Log Out</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Messages section -->
+        {% if messages %}
+        <div class="messages" role="alert" aria-live="polite">
+            {% for message in messages %}
+            <div class="message message--{{ message.tags }}">
+                {% if message.tags == 'error' %}
+                    <span class="material-icons message-icon">error_outline</span>
+                {% elif message.tags == 'success' %}
+                    <span class="material-icons message-icon">check_circle</span>
+                {% elif message.tags == 'info' %}
+                    <span class="material-icons message-icon">info</span>
+                {% endif %}
+                <span class="message-text">{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="dashboard-container">
+            <!-- Main Content Section -->
+            <main class="main-content">
+                <div class="actions-container">
+                    <div class="actions-header-section">
+                        <h1 class="page-heading">Recent Actions</h1>
+                        <div class="user-info">
+                            <span class="user-email">{{ staff.staff_email }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Search Filter -->
+                    <div class="search-filter-container">
+                        <div class="filter-input">
+                            <input type="text" id="actions-filter" placeholder="Search actions...">
+                            <span class="material-icons filter-icon">search</span>
+                        </div>
+                    </div>
+
+                    <!-- Timeline content -->
+                    <div class="timeline-container">
+                        {% if history %}
+                            <div class="timeline">
+                                {% for entry in history %}
+                                    {% if entry.action == 'Sign Up' %}
+                                        <div class="timeline-entry signup-entry {% if forloop.counter > 5 %}hidden-entry{% endif %}">
+                                            <div class="timeline-date">
+                                                <span class="date">{{ entry.date_time|date:"M d, Y" }}</span>
+                                            </div>
+                                            <div class="timeline-connector">
+                                                <div class="timeline-dot signup-dot">
+                                                    <span class="material-icons">person_add</span>
+                                                </div>
+                                                <div class="timeline-line"></div>
+                                            </div>
+                                            <div class="timeline-content signup-content">
+                                                <div class="action-header">
+                                                    <span class="action-type signup-type">Account Created</span>
+                                                    <span class="action-time">{{ entry.date_time|time:"H:i" }}</span>
+                                                </div>
+                                                <div class="action-details">
+                                                    <div class="detail-item">
+                                                        <span class="material-icons">devices</span>
+                                                        <span>{{ entry.device_type }} • {{ entry.browser }} • {{ entry.operating_system }}</span>
+                                                    </div>
+                                                    <div class="detail-item">
+                                                        <span class="material-icons">location_on</span>
+                                                        <span>{{ entry.city }}, {{ entry.region }}, {{ entry.country }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="action-footer">
+
+                                                    <button class="action-btn details-btn" title="View Details"
+                                                            onclick="window.location.href='{% url 'staff_action_details' staff=staff.id location_code=location_code session_key=entry.session_key action_type=entry.action %}'">
+                                                        <span class="material-icons">description</span>
+                                                    </button>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <!-- Login/Logout Session Group -->
+                                        <div class="session-group {% if forloop.counter > 5 %}hidden-entry{% endif %}" data-session-key="{{ entry.login.session_key }}">
+                                            {% if entry.logout %}
+                                                <div class="timeline-entry logout-entry">
+                                                    <div class="timeline-date">
+                                                        <span class="date">{{ entry.logout.date_time|date:"M d, Y" }}</span>
+                                                    </div>
+                                                    <div class="timeline-connector">
+                                                        <div class="timeline-dot logout-dot">
+                                                            <span class="material-icons">logout</span>
+                                                        </div>
+                                                        <div class="timeline-line"></div>
+                                                    </div>
+                                                    <div class="timeline-content logout-content">
+                                                        <div class="action-header">
+                                                            <span class="action-type logout-type">Logout</span>
+                                                            <span class="action-time">{{ entry.logout.date_time|time:"H:i" }}</span>
+                                                        </div>
+                                                        <div class="action-details">
+                                                            <div class="detail-item">
+                                                                <span class="material-icons">schedule</span>
+                                                                <span>Session duration:
+                                                                    {% with duration=entry.logout.date_time|timeuntil:entry.login.date_time %}
+                                                                        {{ duration }}
+                                                                    {% endwith %}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="action-footer">
+                                                            <button class="action-btn details-btn" title="View Details"
+                                                                    onclick="window.location.href='{% url 'staff_action_details' staff_id=staff.id location_code=location_code session_key=entry.logout.session_key action_type=entry.logout.action %}'">
+                                                                <span class="material-icons">description</span>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% else %}
+                                                {% if entry.is_current_session %}
+                                                    <!-- Active Session Indicator -->
+                                                    <div class="timeline-entry active-session-entry">
+                                                        <div class="timeline-date"></div>
+                                                        <div class="timeline-connector">
+                                                            <div class="timeline-dot active-dot">
+                                                                <span class="material-icons">wifi_tethering</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="timeline-content active-session-content">
+                                                            <div class="action-header">
+                                                                <span class="action-type active-type">Active Session</span>
+                                                                <span class="session-duration">
+                                                                    {% with duration=entry.login.date_time|timesince %}
+                                                                        Active for {{ duration }}
+                                                                    {% endwith %}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <!-- Inactive/Ended Session without explicit logout -->
+                                                    <div class="timeline-entry logout-entry">
+                                                        <div class="timeline-date">
+                                                            <span class="date">{{ entry.login.date_time|date:"M d, Y" }}</span>
+                                                        </div>
+                                                        <div class="timeline-connector">
+                                                            <div class="timeline-dot logout-dot">
+                                                                <span class="material-icons">do_not_disturb</span>
+                                                            </div>
+                                                            <div class="timeline-line"></div>
+                                                        </div>
+                                                        <div class="timeline-content logout-content">
+                                                            <div class="action-header">
+                                                                <span class="action-type logout-type">Session Ended</span>
+                                                                <span class="action-time">{{ entry.login.date_time|time:"H:i" }}</span>
+                                                            </div>
+                                                            <div class="action-details">
+                                                                <div class="detail-item">
+                                                                    <span class="material-icons">error_outline</span>
+                                                                    <span>Abnormal termination (browser closed/connection lost)</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="action-footer">
+                                                                <button class="action-btn details-btn" title="View Details"
+                                                                        onclick="window.location.href='{% url 'staff_action_details' staff_id=staff.id location_code=location_code session_key=entry.login.session_key action_type=entry.login.action %}'">
+                                                                    <span class="material-icons">description</span>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            {% endif %}
+                                            <!-- Session Activities (reversed to show most recent first) -->
+                                            {% for activity in entry.activities %}
+                                                <div class="timeline-entry activity-entry">
+                                                    <div class="timeline-date">
+                                                        <span class="date">{{ activity.date_time|date:"M d, Y" }}</span>
+                                                    </div>
+                                                    <div class="timeline-connector">
+                                                        <div class="timeline-dot activity-dot">
+                                                            {% if "changed status of booking" in activity.activity_type|lower %}
+                                                                <span class="material-icons">edit_calendar</span>
+
+                                                            {% elif "updated personal info" in activity.activity_type|lower %}
+                                                                <span class="material-icons">edit</span>
+
+                                                            {% elif "changed email" in activity.activity_type|lower %}
+                                                                <span class="material-icons">email</span>
+
+                                                            {% elif "updated profile photo" in activity.activity_type|lower %}
+                                                                <span class="material-icons">camera_alt</span>
+
+                                                            {% elif "account" in activity.activity_type|lower %}
+                                                                <span class="material-icons">settings_applications</span>
+                                                            {% else %}
+                                                                <span class="material-icons">touch_app</span>
+                                                            {% endif %}
+                                                        </div>
+                                                        <div class="timeline-line"></div>
+                                                    </div>
+                                                    <div class="timeline-content activity-content">
+                                                        <div class="action-header">
+                                                            <span class="action-type activity-type">{{ activity.activity_type }}</span>
+                                                            <span class="action-time">{{ activity.date_time|time:"H:i" }}</span>
+                                                        </div>
+                                                        <div class="action-details">
+                                                            {% if activity.activity_details %}
+                                                                {% if "Update" in activity.activity_type or "Changed" in activity.activity_type or "Reset" in activity.activity_type %}
+                                                                    <div class="detail-item">
+                                                                        <span class="material-icons">article</span>
+                                                                        <span class="changes-summary">Fields updated:</span>
+                                                                    </div>
+                                                                    {% for field, changes in activity.activity_details.items %}
+                                                                        <div class="detail-item field-change">
+                                                                            <span class="field-name">{{ field|title }}:</span>
+                                                                            <span class="field-old">{{ changes.old|default:"Not set" }}</span>
+                                                                            <span class="material-icons change-arrow">arrow_forward</span>
+                                                                            <span class="field-new">{{ changes.new|default:"Not set" }}</span>
+                                                                        </div>
+                                                                    {% endfor %}
+                                                                {% endif %}
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+
+                                            <div class="timeline-entry login-entry">
+                                                <div class="timeline-date">
+                                                    <span class="date">{{ entry.login.date_time|date:"M d, Y" }}</span>
+                                                </div>
+                                                <div class="timeline-connector">
+                                                    <div class="timeline-dot login-dot">
+                                                        <span class="material-icons">login</span>
+                                                    </div>
+                                                    <div class="timeline-line"></div>
+                                                </div>
+                                                <div class="timeline-content login-content">
+                                                    <div class="action-header">
+                                                        <span class="action-type login-type">Login</span>
+                                                        <span class="action-time">{{ entry.login.date_time|time:"H:i" }}</span>
+                                                    </div>
+                                                    <div class="action-details">
+                                                        <div class="detail-item">
+                                                            <span class="material-icons">devices</span>
+                                                            <span>{{ entry.login.device_type }} • {{ entry.login.browser }} • {{ entry.login.operating_system }}</span>
+                                                        </div>
+                                                        <div class="detail-item">
+                                                            <span class="material-icons">location_on</span>
+                                                            <span>{{ entry.login.city }}, {{ entry.login.country }}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="action-footer">
+                                                        <button class="action-btn details-btn" title="View Details"
+                                                                onclick="window.location.href='{% url 'staff_action_details' staff_id=staff.id location_code=location_code session_key=entry.login.session_key action_type=entry.login.action %}'">
+                                                            <span class="material-icons">description</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+
+                                <!-- Show More Button -->
+                                {% if history|length > 5 %}
+                                <div class="show-more-container">
+                                    <button id="show-more-btn" class="show-more-btn">
+                                        <span class="material-icons">expand_more</span>
+                                        <span>Show More</span>
+                                    </button>
+                                </div>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <!-- No Activity Found -->
+                            <div class="no-activity-container">
+                                <div class="no-activity-message">
+                                    <span class="material-icons no-activity-icon">history_toggle_off</span>
+                                    <h3>No Activity Found</h3>
+                                    <p>There are no recent actions to display.</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <p>&copy; {% now "Y" %} CoFlex. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Showing messages for 5 seconds then fade out
+            const messages = document.querySelectorAll('.message');
+            if (messages.length > 0) {
+                setTimeout(function() {
+                    messages.forEach(function(message) {
+                        message.style.opacity = '0';
+                        setTimeout(function() {
+                            message.style.display = 'none';
+                        }, 500);
+                    });
+                }, 5000);
+            }
+
+            const showMoreBtn = document.getElementById('show-more-btn');
+            if (showMoreBtn) {
+                showMoreBtn.addEventListener('click', function() {
+                    const hiddenEntries = document.querySelectorAll('.hidden-entry');
+
+                    if (showMoreBtn.classList.contains('expanded')) {
+                        // Hiding entries if already expanded
+                        hiddenEntries.forEach(entry => {
+                            entry.style.display = 'none';
+                        });
+                        showMoreBtn.innerHTML = '<span class="material-icons">expand_more</span><span>Show More</span>';
+                        showMoreBtn.classList.remove('expanded');
+                    } else {
+                        // Showing entries
+                        hiddenEntries.forEach(entry => {
+                            entry.style.display = 'flex';
+                        });
+                        showMoreBtn.innerHTML = '<span class="material-icons">expand_less</span><span>Show Less</span>';
+                        showMoreBtn.classList.add('expanded');
+                    }
+                });
+            }
+
+            const hiddenEntries = document.querySelectorAll('.hidden-entry');
+            hiddenEntries.forEach(entry => {
+                entry.style.display = 'none';
+            });
+
+            const actionsFilter = document.getElementById('actions-filter');
+            const timelineEntries = document.querySelectorAll('.timeline-entry');
+            const sessionGroups = document.querySelectorAll('.session-group');
+
+            actionsFilter.addEventListener('input', function() {
+                const filterValue = this.value.toLowerCase().trim();
+                const showMoreBtn = document.getElementById('show-more-btn');
+
+                if (filterValue === '') {
+                    // Show first 5 and hide the rest
+                    const hiddenEntries = document.querySelectorAll('.hidden-entry');
+                    hiddenEntries.forEach(entry => {
+                        entry.style.display = 'none';
+                    });
+
+                    timelineEntries.forEach((entry, index) => {
+                        if (!entry.closest('.hidden-entry')) {
+                            entry.style.display = '';
+                        }
+                    });
+
+                    if (showMoreBtn) {
+                        showMoreBtn.style.display = '';
+                        if (showMoreBtn.classList.contains('expanded')) {
+                            showMoreBtn.click();
+                        }
+                    }
+                    return;
+                }
+
+                // Show all entries that match regardless of the limit
+                let hasVisibleEntries = false;
+                timelineEntries.forEach(function(entry) {
+                    const actionType = entry.querySelector('.action-type')?.textContent.toLowerCase() || '';
+                    const actionDetails = entry.querySelector('.action-details')?.textContent.toLowerCase() || '';
+                    const actionDate = entry.querySelector('.date')?.textContent.toLowerCase() || '';
+                    const actionTime = entry.querySelector('.action-time')?.textContent.toLowerCase() || '';
+
+                    const content = actionType + ' ' + actionDetails + ' ' + actionDate + ' ' + actionTime;
+
+                    if (content.includes(filterValue)) {
+                        entry.style.display = '';
+                        hasVisibleEntries = true;
+
+                        const parentGroup = entry.closest('.session-group');
+                        if (parentGroup) {
+                            parentGroup.style.display = '';
+                        }
+                    } else {
+                        entry.style.display = 'none';
+                    }
+                });
+
+                // Hiding "Show More" button during filtering
+                if (showMoreBtn) {
+                    showMoreBtn.style.display = 'none';
+                }
+
+                sessionGroups.forEach(function(group) {
+                    const visibleEntriesInGroup = Array.from(group.querySelectorAll('.timeline-entry')).filter(
+                        entry => entry.style.display !== 'none' && !entry.classList.contains('active-session-entry')
+                    );
+
+                    if (visibleEntriesInGroup.length === 0) {
+                        group.style.display = 'none';
+                    } else {
+                        // Hiding active session indicators if they don't match the filter
+                        const activeIndicator = group.querySelector('.active-session-entry');
+                        if (activeIndicator && !activeIndicator.textContent.toLowerCase().includes(filterValue)) {
+                            activeIndicator.style.display = 'none';
+                        }
+                    }
+                });
+
+                // Hiding placeholder entries (the empty gray items with blue borders)
+                const placeholderEntries = document.querySelectorAll('.timeline-entry:not(.activity-entry):not(.login-entry):not(.logout-entry):not(.signup-entry)');
+                placeholderEntries.forEach(function(entry) {
+                    if (!entry.textContent.toLowerCase().includes(filterValue)) {
+                        entry.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

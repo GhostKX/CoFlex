@@ -1,0 +1,98 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Restore your CoFlex account">
+    <title>Account Restoration - CoFlex</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="icon" href="{% static 'CoFlex_app/favicon/favicon.png' %}" type="image/x-icon" >
+    <link rel="stylesheet" href="{% static 'CoFlex_app/css/user_account_recovery_css/user_account_recovery.css' %}">
+</head>
+<body>
+    <div class="page-container">
+        <div class="restoration-container">
+            <!-- Brand section -->
+            <div class="brand">
+                <a href="{% url 'home' %}" class="brand-link" aria-label="Return to CoFlex homepage">
+                    <span class="material-icons brand-icon">motion_photos_auto</span>
+                    <span class="brand-text">CoFlex</span>
+                </a>
+            </div>
+
+            <!-- Header section -->
+            <div class="header">
+                <h1 class="title">Restore Your Account</h1>
+                <p class="subtitle">Please provide your details for account restoration</p>
+            </div>
+
+            <!-- Messages section -->
+            {% if messages %}
+            <div class="messages" role="alert" aria-live="polite">
+                {% for message in messages %}
+                <div class="message message--{{ message.tags }}">
+                    {% if message.tags == 'error' %}
+                        <span class="material-icons message-icon">error_outline</span>
+                    {% elif message.tags == 'success' %}
+                        <span class="material-icons message-icon">check_circle</span>
+                    {% elif message.tags == 'info' %}
+                        <span class="material-icons message-icon">info</span>
+                    {% endif %}
+                    <span class="message-text">{{ message }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Restoration form -->
+            <form method="POST" class="restoration-form" novalidate>
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="restoration_email" class="form-label">Email Address</label>
+                    <div class="input-wrapper">
+                        <span class="material-icons input-icon">email</span>
+                        {{ form.restoration_email }}
+                    </div>
+                    {% if form.restoration_email.errors %}
+                    <div class="error-message">
+                        {% for error in form.restoration_email.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="restoration_details" class="form-label">Reason for Restoration</label>
+                    <div class="input-wrapper">
+                        <span class="material-icons input-icon">description</span>
+                        {{ form.restoration_details }}
+                    </div>
+                    {% if form.restoration_details.errors %}
+                    <div class="error-message">
+                        {% for error in form.restoration_details.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="submit-button">
+                        <span class="material-icons button-icon">restore</span>
+                        <span class="button-text">Submit Request</span>
+                    </button>
+                    <a href="{% url 'home' %}" class="cancel-button">
+                        <span class="material-icons button-icon">close</span>
+                        <span class="button-text">Cancel</span>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

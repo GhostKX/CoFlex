@@ -1,0 +1,104 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sign in to your CoFlex account">
+    <title>Sign In - CoFlex</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="icon" href="{% static 'CoFlex_app/favicon/favicon.png' %}" type="image/x-icon" >
+    <link rel="stylesheet" href="{% static 'CoFlex_app/css/user_login_css/user_login.css' %}">
+</head>
+<body>
+    <div class="page-container">
+        <div class="login-container">
+            <!-- Brand section -->
+            <div class="brand">
+                <a href="{% url 'home' %}" class="brand-link" aria-label="Return to CoFlex homepage">
+                    <span class="material-icons brand-icon">motion_photos_auto</span>
+                    <span class="brand-text">CoFlex</span>
+                </a>
+            </div>
+
+            <!-- Header section -->
+            <div class="header">
+                <h1 class="title">Welcome Back</h1>
+                <p class="subtitle">Please enter your details to sign in</p>
+            </div>
+
+            <!-- Messages section -->
+            {% if messages %}
+            <div class="messages" role="alert" aria-live="polite">
+                {% for message in messages %}
+                <div class="message message--{{ message.tags }}">
+                    {% if message.tags == 'error' %}
+                        <span class="material-icons message-icon">error_outline</span>
+                    {% elif message.tags == 'success' %}
+                        <span class="material-icons message-icon">check_circle</span>
+                    {% elif message.tags == 'info' %}
+                        <span class="material-icons message-icon">info</span>
+                    {% endif %}
+                    <span class="message-text">{{ message }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Login form -->
+            <form method="POST" class="login-form" novalidate>
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <div class="input-wrapper">
+                        <span class="material-icons input-icon">email</span>
+                        {{ form.email }}
+                    </div>
+                    {% if form.email.errors %}
+                    <div class="error-message">
+                        {% for error in form.email.errors %}
+                        <p>{{ error|safe }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-wrapper">
+                        <span class="material-icons input-icon">lock</span>
+                        {{ form.password }}
+                    </div>
+                    {% if form.password.errors %}
+                    <div class="error-message">
+                        {% for error in form.password.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'forgot_password_email' %}" class="forgot-password">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="submit-button">
+                    <span class="material-icons button-icon">login</span>
+                    <span class="button-text">Sign In</span>
+                </button>
+            </form>
+
+            <div class="footer">
+                <p class="signup-text">
+                    Don't have an account?
+                    <a href="{% url 'register_user' %}" class="signup-link">Create account</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'CoFlex_app/js/user_login_js/user_login.js' %}" defer></script>
+</body>
+</html>

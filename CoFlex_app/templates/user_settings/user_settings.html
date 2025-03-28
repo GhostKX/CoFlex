@@ -1,0 +1,228 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - CoFlex</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="{% static 'CoFlex_app/favicon/favicon.png' %}" type="image/x-icon" >
+    <link rel="stylesheet" href="{% static 'CoFlex_app/css/user_settings_css/user_settings.css' %}">
+</head>
+<body>
+    <div class="page-container">
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+            <div class="brand-section">
+                <a href="{% url 'user_home' user_id=user.id %}" class="logo">
+                    <span class="material-icons">motion_photos_auto</span>
+                    <span>CoFlex</span>
+                </a>
+            </div>
+            <div class="nav-buttons">
+                <a href="{% url 'user_home' user_id=user.id %}" class="nav-btn">
+                    <span class="material-icons">home</span>
+                    <span>Home</span>
+                </a>
+                <a href="{% url 'user_read_profile' user_id=user.id %}" class="nav-btn">
+                    <span class="material-icons">account_circle</span>
+                    <span>Profile</span>
+                </a>
+                <a href="{% url 'locations' user_id=user.id %}" class="nav-btn">
+                    <span class="material-icons">event</span>
+                    <span>Booking</span>
+                </a>
+                <a href="{% url 'subscribed_user_all_bookings' user_id=user.id %}" class="nav-btn">
+                    <span class="material-icons">history</span>
+                    <span>History</span>
+                </a>
+                <a href="{% url 'user_recent_actions_history' user_id=user.id %}" class="nav-btn">
+                    <span class="material-icons">update</span>
+                    <span>Recent Actions</span>
+                </a>
+                <a href="{% url 'user_settings' user_id=user.id %}" class="nav-btn active">
+                    <span class="material-icons">settings</span>
+                    <span>Settings</span>
+                </a>
+                <a href="{% url 'logout_user' %}" class="nav-btn logout">
+                    <span class="material-icons">logout</span>
+                    <span>Log Out</span>
+                </a>
+            </div>
+        </nav>
+        {% if messages %}
+            <div class="alert-info mt-4">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <div class="settings-content">
+            <div class="settings-container">
+                <div class="settings-header">
+                    <h1>
+                        <span class="material-icons">settings</span>
+                        Account Settings
+                    </h1>
+                </div>
+
+                <div id="feedback-container">
+                    <div id="success-message" class="feedback-message success-message">
+                        Settings updated successfully!
+                    </div>
+                    <div id="error-message" class="feedback-message error-message">
+                        Error updating settings. Please try again.
+                    </div>
+                </div>
+
+                <form id="settings-form" method="POST">
+                    <div class="settings-sections">
+                        <!-- Notifications & Language Section -->
+                        <div class="settings-section">
+                            <div class="section-header">Notifications & Language</div>
+
+                            <div class="settings-item">
+                                <div class="settings-item-info">
+                                    <span class="settings-item-title">Language Preference</span>
+                                    <span class="settings-item-description">Choose your preferred language</span>
+                                </div>
+                                <select name="language" id="language-select" class="settings-select">
+                                    <option value="en">English</option>
+                                    <option value="ru">Russian</option>
+                                    <option value="uz">Uzbek</option>
+                                </select>
+                            </div>
+
+                            <div class="settings-item">
+                                <div class="settings-item-info">
+                                    <span class="settings-item-title">Enable Notifications</span>
+                                    <span class="settings-item-description">Receive updates and news</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" name="notifications_enabled" id="notifications-master-toggle">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <div id="notification-types" class="settings-item">
+                                <div class="settings-item-info">
+                                    <span class="settings-item-title">Notification Preferences</span>
+                                    <span class="settings-item-description">Select types of notifications</span>
+                                </div>
+                                <div class="notification-checkboxes">
+                                    <label class="checkbox-container">
+                                        <input type="checkbox" name="notification_types" value="news">
+                                        <span class="checkmark"></span>
+                                        News
+                                    </label>
+                                    <label class="checkbox-container">
+                                        <input type="checkbox" name="notification_types" value="updates">
+                                        <span class="checkmark"></span>
+                                        Platform Updates
+                                    </label>
+                                    <label class="checkbox-container">
+                                        <input type="checkbox" name="notification_types" value="promotions">
+                                        <span class="checkmark"></span>
+                                        Promotions
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Account Security Section -->
+                        <div class="settings-section">
+                            <div class="section-header">Account Security</div>
+
+                            <div class="settings-item">
+                                <div class="settings-item-info">
+                                    <span class="settings-item-title">Two-Factor Authentication</span>
+                                    <span class="settings-item-description">Add an extra layer of security to your account</span>
+                                </div>
+                                <div class="settings-item-toggle">
+                                    <label class="switch">
+                                        <input type="checkbox" id="2fa-toggle">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="settings-item">
+                                <div class="settings-item-info">
+                                    <span class="settings-item-title">Email Settings</span>
+                                    <span class="settings-item-description">Update your primary email address</span>
+                                </div>
+                                <a href="{% url 'user_edit_main_email' user_id=user.id %}" class="settings-btn edit-btn">
+                                    Edit Email
+                                </a>
+                            </div>
+
+                            <div class="settings-item">
+                                <div class="settings-item-info">
+                                    <span class="settings-item-title">Password Management</span>
+                                    <span class="settings-item-description">Change or reset your account password</span>
+                                </div>
+                                <a href="{% url 'user_change_password' user_id=user.id %}" class="settings-btn edit-btn">
+                                    Change password
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Privacy Settings Section -->
+                        <div class="settings-section">
+                            <div class="section-header">Privacy</div>
+
+                            <div class="settings-item">
+                                <div class="settings-item-info">
+                                    <span class="settings-item-title">Profile Visibility</span>
+                                    <span class="settings-item-description">Control who can see your profile</span>
+                                </div>
+                                <select class="settings-select">
+                                    <option>Public</option>
+                                    <option>Friends Only</option>
+                                    <option>Private</option>
+                                </select>
+                            </div>
+
+                            <div class="settings-item">
+                                <div class="settings-item-info">
+                                    <span class="settings-item-title">Data Sharing</span>
+                                    <span class="settings-item-description">Manage data sharing preferences</span>
+                                </div>
+                                <div class="settings-item-toggle">
+                                    <label class="switch">
+                                        <input type="checkbox" id="data-sharing-toggle">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Danger Zone -->
+                        <div class="settings-section danger-zone">
+                            <div class="section-header">Danger Zone</div>
+
+                            <div class="settings-item">
+                                <div class="settings-item-info">
+                                    <span class="settings-item-title">Account Deletion</span>
+                                    <span class="settings-item-description">Permanently delete your account and data</span>
+                                </div>
+                                <a href="{% url 'user_delete_account' user_id=user.id %}" class="settings-btn delete-btn">
+                                    Delete Account
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>&copy; 2025 CoFlex. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="{% static 'CoFlex_app/js/user_settings_js/user_settings.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,415 @@
+{% load static %}
+{% load custom_filters %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoFlex Staff Dashboard</title>
+    <link rel="stylesheet" href="{% static 'CoFlex_Staff_app/css/staff_dashboard.css' %}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="{% static 'CoFlex_app/favicon/favicon.png' %}" type="image/x-icon">
+    <style>
+        .messages {
+            position: fixed;
+            top: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 25rem;
+            z-index: 1000;
+            text-align: center;
+        }
+
+        .message {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            margin: 0 auto;
+            max-width: 25rem;
+        }
+
+        .messages-container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+        }
+
+        .message {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-md);
+            background-color: white;
+        }
+
+        .message-icon {
+            font-size: 1.5rem;
+        }
+
+        .message--success {
+            background-color: #ecfdf5;
+            color: var(--success-color);
+            border-left: 4px solid var(--success-color);
+        }
+
+        .message--error {
+            background-color: #fef2f2;
+            color: var(--error-color);
+            border-left: 4px solid var(--error-color);
+        }
+
+        .message--info {
+            background-color: #eff6ff;
+            color: var(--info-color);
+            border-left: 4px solid var(--info-color);
+        }
+
+        .message-text {
+            flex-grow: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        {% csrf_token %}
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+            <div class="brand-section">
+                <a href="{% url 'staff_dashboard' staff_id=staff.id location_code=staff.location_code %}" class="logo">
+                    <span class="material-icons">motion_photos_auto</span>
+                    <span>CoFlex</span>
+                </a>
+            </div>
+            <div class="nav-buttons">
+                <a href="{% url 'staff_dashboard' staff_id=staff.id location_code=staff.location_code %}" class="nav-btn active">
+                    <span class="material-icons">dashboard</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'staff_recent_actions_history' staff_id=staff.id location_code=staff.location_code %}" class="nav-btn">
+                    <span class="material-icons">update</span>
+                    <span>Recent Actions</span>
+                </a>
+                <a href="{% url 'logout_staff' %}" class="nav-btn logout">
+                    <span class="material-icons">logout</span>
+                    <span>Log Out</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Messages section -->
+        {% if messages %}
+        <div class="messages" role="alert" aria-live="polite">
+            {% for message in messages %}
+            <div class="message message--{{ message.tags }}">
+                {% if message.tags == 'error' %}
+                    <span class="material-icons message-icon">error_outline</span>
+                {% elif message.tags == 'success' %}
+                    <span class="material-icons message-icon">check_circle</span>
+                {% elif message.tags == 'info' %}
+                    <span class="material-icons message-icon">info</span>
+                {% endif %}
+                <span class="message-text">{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="dashboard-container">
+            <!-- Staff Profile Sidebar -->
+            <aside class="staff-sidebar">
+                <!-- Staff Profile Photo -->
+                <form action="{% url 'staff_update_profile_photo' staff_id=staff.id location_code=staff.location_code %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="profile-photo-container">
+                        {% if staff_photo_details.profile_photo %}
+                            <img src="{{ staff_photo_details.profile_photo.url }}" alt="Profile Photo" class="profile-photo">
+                        {% else %}
+                            <img src="{% static 'CoFlex_Staff_app/profile_default/photo.jpg' %}" alt="Default Profile Picture" class="profile-photo">
+                        {% endif %}
+                        <input type="file" name="profile_photo" id="profile_photo" accept="image/*" required>
+                        <button type="button" class="photo-edit-btn" title="Change profile photo">
+                            <span class="material-icons">photo_camera</span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Staff Details -->
+                <div class="staff-details">
+                    <h2>{{ staff.staff_first_name }} {{ staff.staff_last_name }}</h2>
+                    <p class="username">{% if staff_profile.staff_username %}@{{ staff_profile.staff_username }}{% else %}No username added yet{% endif %}</p>
+
+                    <div class="details-section">
+                        <div class="section-header">
+                            <h3>
+                                <span class="material-icons">contact_mail</span>
+                                Staff Details
+                            </h3>
+                            <a href="{% url 'staff_edit_details' staff_id=staff.id location_code=staff.location_code %}">
+                                <span class="material-icons edit-profile-icon" title="Edit Contact Information">edit</span>
+                            </a>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <span class="material-icons">person</span>
+                            </div>
+                            <span class="value">{{ staff.staff_first_name }}</span>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <span class="material-icons">person_outline</span>
+                            </div>
+                            <span class="value">{{ staff.staff_last_name }}</span>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <span class="material-icons">email</span>
+                            </div>
+                            <span class="value">{{ staff.staff_email }}</span>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <span class="material-icons">phone</span>
+                            </div>
+                            <span class="value">{{ staff_profile.phone_number|default:"Not provided" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <span class="material-icons">account_circle</span>
+                            </div>
+                            <span class="value">{{ staff_profile.staff_username|default:"Not provided" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">
+                                <span class="material-icons">home</span>
+                            </div>
+                            <span class="value">{{ staff_profile.address|default:"Not provided" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content Section -->
+            <main class="main-content">
+                <div class="calendar-section">
+                    <div class="calendar-header">
+                        <h2>Bookings Calendar</h2>
+                    </div>
+
+                    <div class="date-selector">
+                        <!-- Date Selection Form -->
+                        <form action="{% url 'staff_calendar_date' staff_id=staff.id location_code=staff.location_code %}" method="post" class="calendar-form">
+                            {% csrf_token %}
+                            <div class="date-selection-container">
+                                <div class="input-with-icon">
+                                    <span class="material-icons date-icon">event</span>
+                                    <input type="date" name="selected_date" id="selected_date" class="form-control date-input" value="{{ current_date|date:'Y-m-d' }}" required>
+                                </div>
+                                <button type="submit" class="booking-action-btn">
+                                    Bookings
+                                    <span class="material-icons">arrow_forward</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Bookings Table -->
+                <div class="bookings-container">
+                    <div class="days-navigation">
+                        <div class="days-scroll-container">
+                            {% for day in days_range %}
+                                <button class="day-btn {% if day.is_today %}active{% endif %}" data-date="{{ day.date }}">
+                                    <span class="day-name">{{ day.day_name }}</span>
+                                    <span class="day-number">{{ day.day_number }}</span>
+                                    {% if day.is_today %}
+                                        <span class="day-label">Today</span>
+                                    {% endif %}
+                                </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="bookings-table-container">
+                        <table class="bookings-table">
+                            <thead>
+                                <tr class="column-headers">
+                                    <th>Booking ID</th>
+                                    <th>First Name</th>
+                                    <th>Last Name</th>
+                                    <th>Check in</th>
+                                    <th>Check out</th>
+                                    <th>Requests</th>
+                                    <th>Status</th>
+                                </tr>
+                                <tr class="search-filters">
+                                    <th>
+                                        <div class="filter-input">
+                                            <input type="text" id="book-id-filter" placeholder="Search...">
+                                            <span class="material-icons filter-icon">search</span>
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="filter-input">
+                                            <input type="text" id="first-name-filter" placeholder="Search...">
+                                            <span class="material-icons filter-icon">search</span>
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="filter-input">
+                                            <input type="text" id="last-name-filter" placeholder="Search...">
+                                            <span class="material-icons filter-icon">search</span>
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="filter-input">
+                                            <input type="text" id="checkin-filter" placeholder="HH:MM">
+                                            <span class="material-icons filter-icon">schedule</span>
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="filter-input">
+                                            <input type="text" id="checkout-filter" placeholder="HH:MM">
+                                            <span class="material-icons filter-icon">schedule</span>
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="filter-input">
+                                            <input type="text" id="requests-filter" placeholder="Search...">
+                                            <span class="material-icons filter-icon">search</span>
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="filter-dropdown">
+                                            <select id="status-filter">
+                                                <option value="all">All</option>
+                                                <option value="booked">Booked</option>
+                                                <option value="in progress">In Progress</option>
+                                                <option value="finished">Finished</option>
+                                                <option value="due out">Due Out</option>
+                                                <option value="cancelled">Cancelled</option>
+                                            </select>
+                                            <span class="material-icons dropdown-icon">expand_more</span>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for booking in all_bookings_today %}
+                                <tr onclick="window.location.href='{% url 'booking_details_view' staff_id=staff.id location_code=staff.location_code booking_id=booking.location_booking.booking_id %}';" style="cursor: pointer;">
+
+                                    <td>{{ booking.location_booking.booking_id }}</td>
+                                    <td>{{ booking.location_booking.user_first_name }}</td>
+                                    <td>{{ booking.location_booking.user_last_name }}</td>
+                                    <td>{{ booking.start_time|time:"H:i" }}</td>
+                                    <td>{{ booking.end_time|time:"H:i" }}</td>
+                                    <td>{{ booking.special_requests }}</td>
+                                    <td>
+                                        <div class="status-badge status-{{ booking.status|lower|slugify }}">
+                                            {% if booking.status|lower == 'booked' %}
+                                                <span class="material-icons">event_available</span>
+                                            {% elif booking.status|lower == 'in progress' %}
+                                                <span class="material-icons">hourglass_top</span>
+                                            {% elif booking.status|lower == 'finished' %}
+                                                <span class="material-icons">task_alt</span>
+                                            {% elif booking.status|lower == 'due out' %}
+                                                <span class="material-icons">schedule</span>
+                                            {% elif booking.status|lower == 'cancelled' %}
+                                                <span class="material-icons">cancel</span>
+                                            {% else %}
+                                                <span class="material-icons">help_outline</span>
+                                            {% endif %}
+                                            {{ booking.status }}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="no-bookings">No bookings found for the selected date.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="view-more-container">
+                        {% if all_bookings_today|length > 7 %}
+                        <button id="show-more-btn" class="show-more-btn">
+                            Show More
+                            <span class="material-icons">expand_more</span>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <footer class="footer">
+            <p>&copy; 2025 CoFlex. All rights reserved.</p>
+        </footer>
+    </div>
+    <script src="{% static 'CoFlex_Staff_app/js/staff_dashboard.js' %}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const showMoreBtn = document.getElementById('show-more-btn');
+
+            if (showMoreBtn) {
+                // Get all booking rows
+                const bookingRows = document.querySelectorAll('.bookings-table tbody tr');
+                const totalRows = bookingRows.length;
+
+                // Initially hide rows beyond the first 5
+                if (totalRows > 7) {
+                    for (let i = 7; i < totalRows; i++) {
+                        bookingRows[i].style.display = 'none';
+                    }
+                }
+
+                showMoreBtn.addEventListener('click', function() {
+                    const isExpanded = this.classList.contains('expanded');
+
+                    if (isExpanded) {
+                        // Hiding rows beyond the first 5
+                        for (let i = 7; i < totalRows; i++) {
+                            bookingRows[i].style.display = 'none';
+                        }
+                        this.textContent = 'Show More ';
+
+                        // Adding the icon back
+                        const icon = document.createElement('span');
+                        icon.className = 'material-icons';
+                        icon.textContent = 'expand_more';
+                        this.appendChild(icon);
+                    } else {
+                        // Showing all rows
+                        bookingRows.forEach(row => {
+                            row.style.display = '';
+                        });
+                        this.textContent = 'Show Less ';
+
+                        // Adding the icon back but rotated
+                        const icon = document.createElement('span');
+                        icon.className = 'material-icons';
+                        icon.textContent = 'expand_more';
+                        this.appendChild(icon);
+                    }
+
+                    this.classList.toggle('expanded');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

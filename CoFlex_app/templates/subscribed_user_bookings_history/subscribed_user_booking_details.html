@@ -1,0 +1,242 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Booking Details Page">
+    <title>Booking Details - CoFlex</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="icon" href="{% static 'CoFlex_app/favicon/favicon.png' %}" type="image/x-icon">
+    <link rel="stylesheet" href="{% static 'CoFlex_app/css/subscribed_user_bookings_history/subscribed_user_booking_details.css' %}">
+</head>
+<body>
+    <div class="page-container">
+        <div class="details-container">
+            <div class="brand">
+                <a href="{% url 'user_home' user_id=user.id %}" class="brand-link" aria-label="Return to CoFlex Dashboard">
+                    <span class="material-icons brand-icon">motion_photos_auto</span>
+                    <span class="brand-text">CoFlex <span class="user-portal">Customer Portal</span></span>
+                </a>
+            </div>
+
+            <div class="header">
+                <h1 class="title">Booking Details</h1>
+                <p class="subtitle">Booking ID: <span class="booking-id">{{ booking.booking_id }}</span></p>
+            </div>
+
+            {% if messages %}
+            <div class="messages" role="alert" aria-live="polite">
+                {% for message in messages %}
+                <div class="message message--{{ message.tags }}">
+                    {% if message.tags == 'error' %}
+                        <span class="material-icons message-icon">error_outline</span>
+                    {% elif message.tags == 'success' %}
+                        <span class="material-icons message-icon">check_circle</span>
+                    {% elif message.tags == 'info' %}
+                        <span class="material-icons message-icon">info</span>
+                    {% endif %}
+                    <span class="message-text">{{ message }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="details-section">
+                <div class="details-card">
+                    <h2 class="section-title">
+                        <span class="material-icons section-icon">person</span>
+                        Your Information
+                    </h2>
+                    <div class="detail-row">
+                        <span class="detail-label">First Name:</span>
+                        <span class="detail-value">{{ user.first_name }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Last Name:</span>
+                        <span class="detail-value">{{ user.last_name }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Email:</span>
+                        <span class="detail-value">{{ user.email }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Phone:</span>
+                        <span class="detail-value">{{ user.phone_number|default:"Not Provided" }}</span>
+                    </div>
+                </div>
+
+                <div class="details-card">
+                    <h2 class="section-title">
+                        <span class="material-icons section-icon">location_on</span>
+                        Location Information
+                    </h2>
+                    <div class="detail-row">
+                        <span class="detail-label">Location:</span>
+                        <span class="detail-value">{{ location.location_name }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Address:</span>
+                        <span class="detail-value">{{ location.location_details.address }}</span>
+                    </div>
+                </div>
+
+                <form method="POST" class="booking-form">
+                    {% csrf_token %}
+                    <div class="details-card">
+                        <h2 class="section-title">
+                            <span class="material-icons section-icon">event</span>
+                            Booking Information
+                        </h2>
+
+                        <div class="form-group {% if form.start_date.errors %}input-error{% endif %}">
+                            <label for="{{ form.start_date.id_for_label }}" class="form-label">Date:</label>
+                            {{ form.start_date }}
+                            {% if form.start_date.errors %}
+                            <div class="error-message">
+                                {% for error in form.start_date.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <p class="form-help">You can only change the date at least 24 hours before.</p>
+                        </div>
+                        <div class="form-group {% if form.start_time.errors %}input-error{% endif %}">
+                            <label for="{{ form.start_time.id_for_label }}" class="form-label">Check in:</label>
+                            {{ form.start_time }}
+                            {% if form.start_time.errors %}
+                            <div class="error-message">
+                                {% for error in form.start_time.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <p class="form-help">You can only edit the start time 6 hours before the booking starts.</p>
+                        </div>
+                        <div class="form-group {% if form.end_time.errors %}input-error{% endif %}">
+                            <label for="{{ form.end_time.id_for_label }}" class="form-label">Check out:</label>
+                            {{ form.end_time }}
+                            {% if form.end_time.errors %}
+                            <div class="error-message">
+                                {% for error in form.end_time.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <p class="form-help">Booking duration must be between 3 and 8 hours.</p>
+                        </div>
+                        <div class="form-group {% if form.special_requests.errors %}input-error{% endif %}">
+                            <label for="{{ form.special_requests.id_for_label }}" class="form-label">Special Requests:</label>
+                            {{ form.special_requests }}
+                            {% if form.special_requests.errors %}
+                            <div class="error-message">
+                                {% for error in form.special_requests.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <p class="form-help">You can only edit special requests up to 3 hours before the booking starts.</p>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="submit-button">
+                                <span class="material-icons button-icon">save</span>
+                                <span class="button-text">Update Booking</span>
+                            </button>
+                            <a href="{% url 'subscribed_user_all_bookings' user_id=user.id %}" class="cancel-button">
+                                <span class="material-icons button-icon">arrow_back</span>
+                                <span class="button-text">Back to Dashboard</span>
+                            </a>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="details-card danger-zone">
+                    <h2 class="section-title danger-title">
+                        <span class="material-icons section-icon">warning</span>
+                        Danger Zone
+                    </h2>
+                    <p class="danger-text">Be careful with the actions below. These actions cannot be undone.</p>
+                    <div class="danger-actions">
+                        <button type="button" class="danger-button" onclick="confirmCancel()">
+                            <span class="material-icons button-icon">cancel</span>
+                            <span class="button-text">Cancel Booking</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="cancelModal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <span class="material-icons modal-icon">warning</span>
+                            <h3>Cancel Booking</h3>
+                        </div>
+                        <div class="modal-body">
+                            <p>Are you sure you want to cancel this booking? This action cannot be undone.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <form method="POST" action="{% url 'subscribed_user_cancel_booking' user_id=user.id  booking_id=booking.booking_id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="cancel_booking" value="true">
+                                <button type="submit" class="modal-button confirm-button">
+                                    <span class="material-icons">check</span>
+                                    <span>Yes, Cancel</span>
+                                </button>
+                            </form>
+                            <button type="button" class="modal-button cancel-button" onclick="closeModal()">
+                                <span class="material-icons">close</span>
+                                <span>No, Keep it</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Showing messages for 5 seconds then fade out
+            const messages = document.querySelectorAll('.message');
+            if (messages.length > 0) {
+                setTimeout(function() {
+                    messages.forEach(function(message) {
+                        message.style.opacity = '0';
+                        setTimeout(function() {
+                            message.style.display = 'none';
+                        }, 500);
+                    });
+                }, 5000);
+            }
+        });
+
+        const modal = document.getElementById('cancelModal');
+
+        function confirmCancel() {
+            modal.style.display = 'flex';
+            void modal.offsetWidth;
+
+            modal.classList.add('modal-visible');
+            setTimeout(() => {
+                modal.dataset.ready = "true";
+            }, 50);
+        }
+
+        function closeModal() {
+            modal.classList.remove('modal-visible');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                modal.dataset.ready = "false";
+            }, 300);
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal && modal.dataset.ready === "true") {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

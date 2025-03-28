@@ -1,0 +1,126 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Complete your profile information">
+    <title>Complete Your Profile - CoFlex</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'CoFlex_app/css/user_registration_css/user_complete_profile.css' %}">
+    <link rel="icon" href="{% static 'CoFlex_app/favicon/favicon.png' %}" type="image/x-icon" >
+</head>
+<body>
+    <div class="page-container">
+        <div class="profile-container">
+            <!-- Brand section -->
+            <div class="brand">
+                <a href="{% url 'user_home' user_id=user.id %}" class="brand-link" aria-label="Return to CoFlex homepage">
+                    <span class="material-icons brand-icon" aria-hidden="true">motion_photos_auto</span>
+                    <span class="brand-text">CoFlex</span>
+                </a>
+            </div>
+
+            <!-- Header Section -->
+            <div class="header">
+                <h1 class="title">
+                    <span class="material-icons title-icon">person_outline</span>
+                    Complete Your Profile
+                </h1>
+                <p class="subtitle">Personalize your account with some additional information</p>
+            </div>
+
+            <!-- Messages Section -->
+            {% if messages %}
+            <div class="messages" role="alert" aria-live="polite">
+                {% for message in messages %}
+                <div class="message message--{{ message.tags }}">
+                    {% if message.tags == 'error' %}
+                        <span class="material-icons message-icon">error_outline</span>
+                    {% elif message.tags == 'success' %}
+                        <span class="material-icons message-icon">check_circle</span>
+                    {% elif message.tags == 'info' %}
+                        <span class="material-icons message-icon">info</span>
+                    {% endif %}
+                    <span class="message-text">{{ message }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Form Section -->
+            <form method="POST" class="profile-form" novalidate>
+                {% csrf_token %}
+
+                {% for field in form %}
+                <div class="form-group {% if field.errors %}form-group--error{% endif %}">
+                    <label for="{{ field.id_for_label }}" class="form-label">
+                        <span class="material-icons field-icon">
+                            {% if 'username' in field.name %}account_circle
+                            {% elif 'phone' in field.name %}phone
+                            {% elif 'address' in field.name %}location_on
+                            {% elif 'email' in field.name %}email
+                            {% else %}edit
+                            {% endif %}
+                        </span>
+                        {{ field.label }}
+                        {% if field.field.required %}
+                            <span class="required">*</span>
+                        {% else %}
+                            <span class="optional">(optional)</span>
+                        {% endif %}
+                    </label>
+
+                    <div class="input-wrapper">
+                        {{ field }}
+                        {% if field.errors %}
+                        <span class="material-icons error-icon">error_outline</span>
+                        {% endif %}
+                    </div>
+
+                    {% if field.help_text %}
+                    <div class="help-text">
+                        <span class="material-icons help-icon">info</span>
+                        {{ field.help_text }}
+                    </div>
+                    {% endif %}
+
+                    {% if field.errors %}
+                    <div class="error-message">
+                        <span class="material-icons error-icon">error_outline</span>
+                        {{ field.errors|join:", " }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="confirmSkip('{% url 'user_read_profile' user.id %}')">
+                        <span class="material-icons button-icon">skip_next</span>
+                        Skip for now
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="material-icons button-icon">save</span>
+                        Save Profile
+                    </button>
+                </div>
+            </form>
+
+            <!-- Progress Indicator -->
+            <div class="progress-indicator">
+                <div class="progress-text">
+                    <span class="material-icons progress-icon">trending_up</span>
+                    Profile completion
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'CoFlex_app/js/user_registration_js/user_complete_profile.js' %}"></script>
+</body>
+</html>

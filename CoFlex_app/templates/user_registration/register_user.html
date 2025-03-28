@@ -1,0 +1,132 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Your CoFlex Account</title>
+    <link rel="stylesheet" href="{% static 'CoFlex_app/css/user_registration_css/user_register.css' %}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="{% static 'CoFlex_app/favicon/favicon.png' %}" type="image/x-icon" >
+</head>
+<body>
+    <div class="page-container">
+        <div class="form-wrapper">
+            <div class="brand-section">
+                <a href="{% url 'home' %}" class="logo">
+                    <span class="material-icons">motion_photos_auto</span>
+                    <span>CoFlex</span>
+                </a>
+            </div>
+
+            <div class="form-header">
+                <h1>Create Account</h1>
+                <p class="subtitle">Join thousands of users and start your journey with CoFlex</p>
+            </div>
+
+            {% if messages %}
+                <div class="alert alert-danger" role="alert">
+                    <span class="material-icons alert-icon">error_outline</span>
+                    <ul>
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <form method="POST" class="form-container" novalidate>
+                {% csrf_token %}
+
+                <div class="form-row">
+                    <div class="form-group {% if form.first_name.errors %}has-error{% endif %}">
+                        <label for="id_first_name">
+                            <span class="material-icons input-icon">person_outline</span>
+                            First Name
+                        </label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}
+                            <div class="error-message" role="alert">
+                                {% for error in form.first_name.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group {% if form.last_name.errors %}has-error{% endif %}">
+                        <label for="id_last_name">
+                            <span class="material-icons input-icon">person_outline</span>
+                            Last Name
+                        </label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
+                            <div class="error-message" role="alert">
+                                {% for error in form.last_name.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group {% if form.email.errors %}has-error{% endif %}">
+                    <label for="id_email">
+                        <span class="material-icons input-icon">email</span>
+                        Email Address
+                    </label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <div class="error-message" role="alert">
+                            {% for error in form.email.errors %}
+                                <p>{{ error|safe }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group {% if form.password1.errors %}has-error{% endif %}">
+                    <label for="id_password1">
+                        <span class="material-icons input-icon">lock</span>
+                        Password
+                    </label>
+                    {{ form.password1 }}
+                    {% if form.password1.errors %}
+                        <div class="error-message" role="alert">
+                            {% for error in form.password1.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group {% if form.password2.errors %}has-error{% endif %}">
+                    <label for="id_password2">
+                        <span class="material-icons input-icon">lock_outline</span>
+                        Confirm Password
+                    </label>
+                    {{ form.password2 }}
+                    {% if form.password2.errors %}
+                        <div class="error-message" role="alert">
+                            {% for error in form.password2.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    <span class="material-icons">arrow_forward</span>
+                    Create Account
+                </button>
+
+                <div class="form-footer">
+                    {#<p>Already have an account? <a href="{% url 'login_user' %}">Sign in</a></p>#}
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

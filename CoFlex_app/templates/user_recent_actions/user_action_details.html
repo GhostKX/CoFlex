@@ -1,0 +1,255 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Action Details | CoFlex</title>
+    <link rel="stylesheet" href="{% static 'CoFlex_app/css/user_recent_actions/user_action_details.css' %}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="{% static 'CoFlex_app/favicon/favicon.png' %}" type="image/x-icon">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>User Action Details</h1>
+            <p class="subtitle">Viewing action information for session: {{ user_session.user }}</p>
+        </div>
+
+        <div class="content-wrapper">
+            <!-- User Session Details Section -->
+            <div class="details-section">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="material-icons">info</span>
+                        <h2>Session Information</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <span class="material-icons">person</span>
+                                <span>User</span>
+                            </div>
+                            <div class="detail-value">{{ user.email }}</div>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                {% if 'Login' in user_session.action %}
+                                    <span class="material-icons">login</span>
+                                {% elif 'Logout' in user_session.action %}
+                                    <span class="material-icons">logout</span>
+                                {% else %}
+                                    <span class="material-icons">person_add</span>
+                                {% endif %}
+                                <span>Action</span>
+                            </div>
+                            <div class="detail-value action-badge {{ user_session.action|lower }}">
+                                {{ user_session.action }}
+                            </div>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <span class="material-icons">event</span>
+                                <span>Date & Time</span>
+                            </div>
+                            <div class="detail-value">{{ user_session.date_time }}</div>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                {% if user_session.is_Logged_in %}
+                                    <span class="material-icons">wifi_tethering</span>
+                                {% else %}
+                                    <span class="material-icons">logout</span>
+                                {% endif %}
+                                <span>Status</span>
+                            </div>
+                            <div class="detail-value status-badge {% if user_session.is_Logged_in %}active{% else %}inactive{% endif %}">
+                                {% if user_session.is_Logged_in %}
+                                    Active Session
+                                {% else %}
+                                    Ended Session
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="material-icons">devices</span>
+                        <h2>Device Information</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <span class="material-icons">computer</span>
+                                <span>Device Type</span>
+                            </div>
+                            <div class="detail-value">{{ user_session.device_type|default:"Unknown" }}</div>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <span class="material-icons">memory</span>
+                                <span>Device Name</span>
+                            </div>
+                            <div class="detail-value">{{ user_session.device_name|default:"Unknown" }}</div>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <span class="material-icons">desktop_windows</span>
+                                <span>Operating System</span>
+                            </div>
+                            <div class="detail-value">{{ user_session.operating_system|default:"Unknown" }}</div>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <span class="material-icons">public</span>
+                                <span>Browser</span>
+                            </div>
+                            <div class="detail-value">{{ user_session.browser|default:"Unknown" }}</div>
+                        </div>
+
+                        <div class="detail-item">
+                            <div class="detail-label">
+                                <span class="material-icons">router</span>
+                                <span>IP Address</span>
+                            </div>
+                            <div class="detail-value">{{ user_session.ip_address|default:"Unknown" }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map Section -->
+            <div class="map-section">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="material-icons">location_on</span>
+                        <h2>Location Information</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="location-details">
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <span class="material-icons">location_city</span>
+                                    <span>City</span>
+                                </div>
+                                <div class="detail-value">{{ user_session.city|default:"Unknown" }}</div>
+                            </div>
+
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <span class="material-icons">landscape</span>
+                                    <span>Region</span>
+                                </div>
+                                <div class="detail-value">{{ user_session.region|default:"Unknown" }}</div>
+                            </div>
+
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <span class="material-icons">flag</span>
+                                    <span>Country</span>
+                                </div>
+                                <div class="detail-value">{{ user_session.country|default:"Unknown" }}</div>
+                            </div>
+
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <span class="material-icons">my_location</span>
+                                    <span>Coordinates</span>
+                                </div>
+                                <div class="detail-value">
+                                    {% if user_session.latitude and user_session.longitude %}
+                                        {{ user_session.latitude }}, {{ user_session.longitude }}
+                                    {% else %}
+                                        Not available
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="map"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <a href="{% url 'user_recent_actions_history' user_id=user.id %}" class="btn back-btn">
+                <span class="material-icons">arrow_back</span>
+                <span>Back to Recent Actions</span>
+            </a>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; {% now "Y" %} CoFlex. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if user_session.latitude and user_session.longitude %}
+                var map = L.map('map').setView([{{ user_session.latitude }}, {{ user_session.longitude }}], 15);
+
+                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                }).addTo(map);
+
+                // Icon
+                var locationIcon = L.icon({
+                    iconUrl: '{% static "CoFlex_app/icons/location.png" %}',
+                    iconSize: [35, 35],
+                    iconAnchor: [19, 38],
+                    popupAnchor: [0, -38]
+                });
+
+                var marker = L.marker([{{ user_session.latitude }}, {{ user_session.longitude }}], {
+                    icon: locationIcon
+                }).addTo(map);
+
+                var popupContent = `
+                    <div class="location-popup">
+                        <h3>{{ user_session.action }} Location</h3>
+                        <p><strong>City:</strong> {{ user_session.city|default:"Unknown" }}</p>
+                        <p><strong>Country:</strong> {{ user_session.country|default:"Unknown" }}</p>
+                        <p><strong>Organization:</strong> {{ user_session.organization|default:"Unknown" }}</p>
+                        <p><strong>Date/Time:</strong> {{ user_session.date_time }}</p>
+                    </div>
+                `;
+
+                marker.bindPopup(popupContent).openPopup();
+
+                L.circle([{{ user_session.latitude }}, {{ user_session.longitude }}], {
+                    radius: 100,  // 500 meters radius
+                    color: '#3388ff',
+                    fillColor: '#3388ff',
+                    fillOpacity: 0.1
+                }).addTo(map);
+            {% else %}
+                document.getElementById('map').innerHTML = '<div class="no-location-data">Location data not available for this session</div>';
+                document.getElementById('map').classList.add('no-data');
+            {% endif %}
+        });
+    </script>
+</body>
+</html>

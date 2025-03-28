@@ -1,0 +1,100 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Edit User Details">
+    <title>Edit User Details - CoFlex</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="icon" href="{% static 'CoFlex_app/favicon/favicon.png' %}" type="image/x-icon" >
+    <link rel="stylesheet" href="{% static 'CoFlex_app/css/user_edit_info_css/user_edit_secondary_info.css' %}">
+</head>
+<body>
+    <div class="page-container">
+        <div class="form-container">
+            <div class="brand">
+                <a href="{% url 'user_home' user_id=user.id %}" class="brand-link" aria-label="Return to CoFlex homepage">
+                    <span class="material-icons brand-icon">motion_photos_auto</span>
+                    <span class="brand-text">CoFlex</span>
+                </a>
+            </div>
+
+            <div class="header">
+                <h1 class="title">Edit User Details</h1>
+                <p class="subtitle">Update your personal information</p>
+            </div>
+
+            {% if messages %}
+            <div class="messages" role="alert" aria-live="polite">
+                {% for message in messages %}
+                <div class="message message--{{ message.tags }}">
+                    {% if message.tags == 'error' %}
+                        <span class="material-icons message-icon">error_outline</span>
+                    {% elif message.tags == 'success' %}
+                        <span class="material-icons message-icon">check_circle</span>
+                    {% elif message.tags == 'info' %}
+                        <span class="material-icons message-icon">info</span>
+                    {% endif %}
+                    <span class="message-text">{{ message }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="POST" class="edit-form" novalidate>
+                {% csrf_token %}
+
+                <div class="form-group {% if form.second_email.errors %}input-error{% endif %}">
+                    <label for="second_email" class="form-label">Second Email</label>
+                    {{ form.second_email }}
+                    {% if form.second_email.errors %}
+                    <div class="error-message">
+                        {% for error in form.second_email.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group {% if form.second_phone_number.errors %}input-error{% endif %}">
+                    <label for="second_phone_number" class="form-label">Second Phone Number</label>
+                    {{ form.second_phone_number }}
+                    {% if form.second_phone_number.errors %}
+                    <div class="error-message">
+                        {% for error in form.second_phone_number.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group {% if form.second_address.errors %}input-error{% endif %}">
+                    <label for="second_address" class="form-label">Second Address</label>
+                    {{ form.second_address }}
+                    {% if form.second_address.errors %}
+                    <div class="error-message">
+                        {% for error in form.second_address.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="submit-button">
+                        <span class="material-icons button-icon">save</span>
+                        <span class="button-text">Save Changes</span>
+                    </button>
+                    <a href="{% url 'user_read_profile' user_id=user.id %}" class="cancel-button">
+                        <span class="material-icons button-icon">close</span>
+                        <span class="button-text">Cancel</span>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
