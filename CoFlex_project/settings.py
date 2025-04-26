@@ -160,7 +160,6 @@ LOGOUT_URL = '/logout/'
 
 CRONJOBS = [
     ('0 0 * * *', 'CoFlex_app.cron.delete_expired_users'),
-    ('0 */6 * * *', 'CoFlex_app.cron.delete_unsuccessful_card_details')
 ]
 
 
