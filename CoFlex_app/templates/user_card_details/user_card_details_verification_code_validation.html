@@ -1,0 +1,265 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - CoFlex</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="icon" href="{% static 'CoFlex_app/favicon/favicon.png' %}" type="image/x-icon" >
+    <link rel="stylesheet" href="{% static 'CoFlex_app/css/user_card_details/user_card_details_verification_code_validation.css' %}">
+</head>
+<body>
+    <div class="page-container">
+        <div class="checkout-container">
+            <!-- Brand section -->
+            <div class="brand">
+                <a href="{% url 'user_home' user_id=user.id %}" class="brand-link" aria-label="Return to CoFlex homepage">
+                    <span class="material-icons brand-icon" aria-hidden="true">motion_photos_auto</span>
+                    <span class="brand-text">CoFlex</span>
+                </a>
+            </div>
+
+            <!-- Messages Section -->
+            {% if messages %}
+            <div class="messages" role="alert" aria-live="polite">
+                {% for message in messages %}
+                <div class="message message--{{ message.tags }}">
+                    {% if message.tags == 'error' %}
+                        <span class="material-icons message-icon">error_outline</span>
+                    {% elif message.tags == 'success' %}
+                        <span class="material-icons message-icon">check_circle</span>
+                    {% elif message.tags == 'info' %}
+                        <span class="material-icons message-icon">info</span>
+                    {% endif %}
+                    <span class="message-text">{{ message }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Single form that encompasses both sections -->
+            <form method="POST" class="card-form" id="card-details-form" novalidate>
+                {% csrf_token %}
+
+                <div class="checkout-grid">
+                    <!-- Card Details Section (Left) -->
+                    <div class="card-details-section">
+                        <div class="header">
+                            <h1 class="title">
+                                <span class="material-icons title-icon">credit_card</span>
+                                Payment Details
+                            </h1>
+                            <p class="subtitle">Enter your payment information to continue</p>
+                        </div>
+
+                        <!-- Card Details Form Fields -->
+                        <div class="form-fields">
+                            <!-- Card holder name field -->
+                            <div class="form-group {% if form.card_holder_name.errors %}form-group--error{% endif %}">
+                                <label for="{{ form.card_holder_name.id_for_label }}" class="form-label">
+                                    <span class="material-icons field-icon">person</span>
+                                    {{ form.card_holder_name.label }}
+                                    {% if form.card_holder_name.field.required %}
+                                        <span class="required">*</span>
+                                    {% endif %}
+                                </label>
+
+                                <div class="input-wrapper">
+                                    {{ form.card_holder_name }}
+                                    {% if form.card_holder_name.errors %}
+                                    <span class="material-icons error-icon">error_outline</span>
+                                    {% endif %}
+                                </div>
+
+                                {% if form.card_holder_name.errors %}
+                                <div class="error-message">
+                                    <span class="material-icons error-icon">error_outline</span>
+                                    {{ form.card_holder_name.errors|join:", " }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Card number field -->
+                            <div class="form-group {% if form.card_number.errors %}form-group--error{% endif %}">
+                                <label for="{{ form.card_number.id_for_label }}" class="form-label">
+                                    <span class="material-icons field-icon">credit_card</span>
+                                    {{ form.card_number.label }}
+                                    {% if form.card_number.field.required %}
+                                        <span class="required">*</span>
+                                    {% endif %}
+                                </label>
+
+                                <div class="input-wrapper">
+                                    {{ form.card_number }}
+                                    {% if form.card_number.errors %}
+                                    <span class="material-icons error-icon">error_outline</span>
+                                    {% endif %}
+                                </div>
+
+                                {% if form.card_number.errors %}
+                                <div class="error-message">
+                                    <span class="material-icons error-icon">error_outline</span>
+                                    {{ form.card_number.errors|join:", " }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Expiry and CVV fields (inline) -->
+                            <div class="form-row">
+                                <div class="form-group {% if form.expiry_date.errors %}form-group--error{% endif %}">
+                                    <label for="{{ form.expiry_date.id_for_label }}" class="form-label">
+                                        <span class="material-icons field-icon">event</span>
+                                        {{ form.expiry_date.label }}
+                                        {% if form.expiry_date.field.required %}
+                                            <span class="required">*</span>
+                                        {% endif %}
+                                    </label>
+
+                                    <div class="input-wrapper">
+                                        {{ form.expiry_date }}
+                                        {% if form.expiry_date.errors %}
+                                        <span class="material-icons error-icon">error_outline</span>
+                                        {% endif %}
+                                    </div>
+
+                                    {% if form.expiry_date.errors %}
+                                    <div class="error-message">
+                                        <span class="material-icons error-icon">error_outline</span>
+                                        {{ form.expiry_date.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="form-group {% if form.cvv.errors %}form-group--error{% endif %}">
+                                    <label for="{{ form.cvv.id_for_label }}" class="form-label">
+                                        <span class="material-icons field-icon">lock</span>
+                                        {{ form.cvv.label }}
+                                        {% if form.cvv.field.required %}
+                                            <span class="required">*</span>
+                                        {% endif %}
+                                    </label>
+
+                                    <div class="input-wrapper">
+                                        {{ form.cvv }}
+                                        {% if form.cvv.errors %}
+                                        <span class="material-icons error-icon">error_outline</span>
+                                        {% endif %}
+                                    </div>
+
+                                    {% if form.cvv.errors %}
+                                    <div class="error-message">
+                                        <span class="material-icons error-icon">error_outline</span>
+                                        {{ form.cvv.errors|join:", " }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Terms and Conditions Checkbox -->
+                            <div class="form-group terms-group {% if form.terms_agreement.errors %}form-group--error{% endif %}">
+                                <div class="checkbox-wrapper">
+                                    <input type="checkbox" id="terms_agreement" name="terms_agreement" required>
+                                    <label for="terms_agreement" class="checkbox-label">
+                                        I agree to the <a href="#" class="terms-link">Terms & Conditions</a> and <a href="#" class="terms-link">Privacy Policy</a>
+                                        <span class="required">*</span>
+                                    </label>
+                                </div>
+                                <div class="error-message" id="terms-error" style="display: none;">
+                                    <span class="material-icons error-icon">error_outline</span>
+                                    <span>You must agree to the Terms & Conditions</span>
+                                </div>
+                            </div>
+
+                            <!-- Subscription Details -->
+                            <div class="subscription-details">
+                                <div class="subscription-info">
+                                    <span class="material-icons">architecture</span>
+                                    <div>
+                                        <strong>Subscription Plan:</strong> {{ subscription_plan_type|capfirst }}
+                                        <p class="subscription-price">Total Charge: ${{ amount_to_charge }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Security Notice -->
+                            <div class="security-notice">
+                                <span class="material-icons security-icon">shield</span>
+                                <p>Your card details are encrypted and securely stored. We do not share your payment information.</p>
+                            </div>
+
+                            <!-- Form Actions for Card Details Section -->
+                            <div class="form-actions card-details-actions">
+                                <a  href="{% url 'user_card_cancel_verification' user_id=user.id %}" type="button" class="btn btn-secondary" id="cancel-payment">
+                                    <span class="material-icons button-icon">arrow_back</span>
+                                    Cancel
+                                </a>
+                                <button type="button" class="btn btn-primary" id="verify-payment-button">
+                                    <span class="material-icons button-icon">email</span>
+                                    Send Verification Code
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Verification Section (Right) -->
+                    <div class="verification-section">
+                        <div class="header">
+                            <h2 class="title">Verify Your Payment</h2>
+                            <p class="subtitle">We've sent a 6-digit verification code to <strong class="user-email">{{ user.email }}</strong></p>
+                        </div>
+
+                        <!-- Verification Code field -->
+                        <div class="verification-code">
+                            <label for="verification_code" class="code-label">Enter Verification Code</label>
+                            <div class="code-input-wrapper">
+                                {{ form.verification_code }}
+                                <span class="material-icons input-icon" aria-hidden="true">pin</span>
+                            </div>
+                            {% if form.verification_code.errors %}
+                            <div class="error-message" id="code-error">
+                                {{ form.verification_code.errors|join:", " }}
+                            </div>
+                            {% endif %}
+                            <div class="help-text" id="code-help">
+                                Enter the 6-digit code we sent to your email
+                            </div>
+                        </div>
+
+                        <!-- Resend Timer -->
+                        <div class="resend-code">
+                            <p class="timer" id="resend-timer">Resend code in <span>59</span> seconds</p>
+                            <div class="resend-form" id="resend-form" style="display: none;">
+                                <button type="button" class="resend-button" id="resend-code-button">
+                                    Resend verification code
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" id="cancel-verification">
+                                <span class="material-icons button-icon">arrow_back</span>
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="submit-card-details">
+                                <span class="material-icons button-icon">check</span>
+                                Confirm Payment
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const userId = "{{ user.id }}";
+        const subscriptionPlan = "{{ subscription_plan }}";
+    </script>
+    <script src="{% static 'CoFlex_app/js/user_card_details/user_card_details_verification_code_validation.js' %}"></script>
+
+</body>
+</html>

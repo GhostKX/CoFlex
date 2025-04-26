@@ -1,5 +1,5 @@
 from django.db import models
-from .sand_subscribed_users import SubscribedUsers
+from .subscribed_users import VerifiedUsers, SubscribedUsers
 
 
 # Locations table storing the data of all locations

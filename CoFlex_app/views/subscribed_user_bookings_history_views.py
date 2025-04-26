@@ -2,9 +2,11 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, get_object_or_404, reverse
 from django.shortcuts import render
+from django.conf import settings
 from ..models import VerifiedUsers, SubscribedUsers, Booking, BookingDetails, LocationAvailability
 from ..forms.subscribed_user_bookings_history_forms import SubscribedUserBookingDetailsForm
 from .user_recent_actions_views import user_device_activity
+from .email_functions import send_booking_cancellation_email
 
 
 @login_required
@@ -142,6 +144,13 @@ def subscribed_user_cancel_booking(request, user_id, booking_id):
 
             user_device_activity(instance=user, request=request, activity_type=f'Cancelled Booking {booking_id}',
                                  activity_details={})
+
+            send_booking_cancellation_email(user=user,
+                                            sender_email=settings.EMAIL_HOST_USER,
+                                            recipient_email=user.email,
+                                            booking=booking,
+                                            booking_details=booking_details,
+                                            location=location)
 
             messages.success(request, f"Booking {booking_id} has been cancelled successfully!")
 

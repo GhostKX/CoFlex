@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Cancellation - CoFlex</title>
+    <style>
+        /* All styles are inlined for all types of emails */
+    </style>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Inter', Arial, sans-serif; background-color: #f9fafb; color: #111827; line-height: 1.5;">
+    <!-- Wrapper with background color -->
+    <div style="background-color: #f9fafb; padding: 40px 20px;">
+        <!-- Main container -->
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);">
+            <!-- Brand Header -->
+            <div style="padding: 28px 0; text-align: center; border-bottom: 1px solid #f3f4f6;">
+                <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
+                    <tr>
+                        <td style="text-align: center;">
+                            <!-- SVG icon instead of material icon -->
+                            <a href="#"><img src="https://i.ibb.co/VYYwSTCD/logo.png" alt="CoFlex" width="48" height="48" style="vertical-align: middle; margin-right: 8px;"></a>
+                            <span style="font-size: 24px; font-weight: 700; color: #2563eb; vertical-align: middle;">CoFlex</span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Email Content -->
+            <div style="padding: 40px 48px;">
+                <div style="text-align: center; margin-bottom: 32px;">
+                    <h1 style="font-size: 24px; font-weight: 600; margin: 0 0 12px 0; color: #111827;">Booking Cancelled</h1>
+                    <p style="font-size: 16px; font-weight: 400; margin: 0; color: #6b7280;">Your booking has been successfully cancelled</p>
+                </div>
+
+                <p style="font-size: 16px; margin-bottom: 24px; color: #111827;">Hello {{user.first_name}} {{user.last_name}},</p>
+
+                <p style="font-size: 16px; margin-bottom: 24px; color: #374151;">Your booking has been successfully cancelled. Below are the details of your cancelled booking:</p>
+
+                <!-- Booking ID box -->
+                <div style="background-color: #fef2f2; border-radius: 8px; padding: 24px; margin: 32px 0; text-align: center; border: 1px solid #fee2e2;">
+                    <div style="font-size: 16px; font-weight: 500; color: #b91c1c; margin-bottom: 8px;">Booking ID</div>
+                    <div style="font-size: 28px; font-weight: 700; letter-spacing: 2px; color: #dc2626; margin: 8px 0; padding: 8px 0;">{{booking.id}}</div>
+                    <div style="display: inline-block; margin-top: 12px; color: #b91c1c; font-size: 14px; font-weight: 500;">
+                        <!-- Inline calendar icon -->
+                        <a href="https://imgbb.com/"><img src="https://i.ibb.co/D6f0pfB/icons8-today-96-1.png" alt="icons8-today-96-1"alt="Calendar" width="18" height="18" style="vertical-align: middle; margin-right: 6px;"></a>
+                        <span>Cancelled on {{booking.cancellation_date}} at {{booking.cancellation_time}}</span>
+                    </div>
+                </div>
+
+                <!-- Location Details Section -->
+                <div style="background-color: #f9fafb; border-radius: 8px; padding: 24px; margin: 32px 0; border: 1px solid #f3f4f6;">
+                    <h2 style="font-size: 18px; font-weight: 600; color: #111827; margin-top: 0; margin-bottom: 16px;">Location Details</h2>
+
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+                        <tr>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; width: 40%; color: #6b7280; font-size: 14px;">Name</td>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #111827; font-weight: 500;">{{location.name}}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; width: 40%; color: #6b7280; font-size: 14px;">Address</td>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #111827; font-weight: 500;">{{location.address}}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; width: 40%; color: #6b7280; font-size: 14px;">Contact</td>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #111827; font-weight: 500;">{{location.contact_phone}}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; width: 40%; color: #6b7280; font-size: 14px;">Hours</td>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #111827; font-weight: 500;">{{location.working_hours}}</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Schedule Details Section -->
+                <div style="background-color: #f9fafb; border-radius: 8px; padding: 24px; margin: 32px 0; border: 1px solid #f3f4f6;">
+                    <h2 style="font-size: 18px; font-weight: 600; color: #111827; margin-top: 0; margin-bottom: 16px;">Booking Details</h2>
+
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+                        <tr>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; width: 40%; color: #6b7280; font-size: 14px;">Booking Created</td>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #111827; font-weight: 500;">{{booking.created_date}} at {{booking.created_time}}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; width: 40%; color: #6b7280; font-size: 14px;">From Date</td>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #111827; font-weight: 500;">{{schedule.start_date}}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; width: 40%; color: #6b7280; font-size: 14px;">To Date</td>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #111827; font-weight: 500;">{{schedule.end_date}}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; width: 40%; color: #6b7280; font-size: 14px;">Time</td>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #111827; font-weight: 500;">{{schedule.start_time}} - {{schedule.end_time}}</td>
+                        </tr>
+                        {% if schedule.duration %}
+                        <tr>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; width: 40%; color: #6b7280; font-size: 14px;">Duration</td>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #111827; font-weight: 500;">{{schedule.duration}} hours</td>
+                        </tr>
+                        {% endif %}
+                        {% if schedule.special_requests and schedule.special_requests != 'No Requests' %}
+                        <tr>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; width: 40%; color: #6b7280; font-size: 14px;">Special Requests</td>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #111827; font-weight: 500;">{{schedule.special_requests}}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; width: 40%; color: #6b7280; font-size: 14px;">Status</td>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6;">
+                                <span style="background-color: #fee2e2; color: #b91c1c; font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 4px;">{{booking.status}}</span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- What's Next Section -->
+                <div style="background-color: #f0f9ff; border-radius: 8px; padding: 24px; margin: 32px 0; border: 1px solid #e0f2fe;">
+                    <h2 style="font-size: 18px; font-weight: 600; color: #111827; margin-top: 0; margin-bottom: 16px;">What's Next?</h2>
+
+                    <div style="display: flex; margin-bottom: 16px;">
+                        <div style="width: 24px; margin-right: 12px; color: #0284c7;">
+                            <a href="#"><img src="https://i.ibb.co/BHNTTjQ5/icons8-tick-box-100.png" alt="Checkmark" width="20" height="20"></a>
+                        </div>
+                        <div style="flex: 1; font-size: 14px; color: #374151;">
+                            <strong>Book Again</strong>: You can always make a new booking anytime
+                        </div>
+                    </div>
+
+                    <div style="display: flex; margin-bottom: 16px;">
+                        <div style="width: 24px; margin-right: 12px; color: #0284c7;">
+                            <a href="#"><img src="https://i.ibb.co/BHNTTjQ5/icons8-tick-box-100.png" alt="Checkmark" width="20" height="20"></a>
+                        </div>
+                        <div style="flex: 1; font-size: 14px; color: #374151;">
+                            <strong>Explore Options</strong>: Check out our other available spaces
+                        </div>
+                    </div>
+
+                    <div style="display: flex;">
+                        <div style="width: 24px; margin-right: 12px; color: #0284c7;">
+                            <a href="#"><img src="https://i.ibb.co/BHNTTjQ5/icons8-tick-box-100.png" alt="Checkmark" width="20" height="20"></a>
+                        </div>
+                        <div style="flex: 1; font-size: 14px; color: #374151;">
+                            <strong>Contact Support</strong>: If you have any questions or need assistance contact our customer support team.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Info -->
+                <div style="margin: 24px 0;">
+                    <p style="font-size: 16px; color: #374151;">If this cancellation was made in error or you need to make a new booking, you can do so through your CoFlex account anytime.</p>
+
+                    <p style="font-size: 16px; color: #374151;">Thank you for using CoFlex!</p>
+                </div>
+
+                <!-- Button container -->
+                <div style="margin: 32px 0; text-align: center;">
+                    <a href="{{location.website}}" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-weight: 600; font-size: 16px; text-decoration: none; padding: 12px 24px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                        <span style="vertical-align: middle;">Book Again</span>
+                    </a>
+                </div>
+
+                <p style="font-size: 14px; color: #6b7280; margin-top: 16px;">If you have any questions, please contact our support team at <a href="mailto:support@coflex.com" style="color: #2563eb; text-decoration: none;">support@coflex.com</a></p>
+            </div>
+
+            <!-- Footer -->
+            <div style="background-color: #f9fafb; padding: 32px; text-align: center; border-top: 1px solid #f3f4f6;">
+                <div style="margin-bottom: 20px;">
+                    <a href="#" style="color: #2563eb; text-decoration: none; margin: 0 10px; font-size: 14px; font-weight: 500;">Help Center</a>
+                    <a href="#" style="color: #2563eb; text-decoration: none; margin: 0 10px; font-size: 14px; font-weight: 500;">Privacy Policy</a>
+                    <a href="#" style="color: #2563eb; text-decoration: none; margin: 0 10px; font-size: 14px; font-weight: 500;">Terms of Service</a>
+                </div>
+
+                <div style="margin: 24px 0;">
+                    <!-- Facebook icon -->
+                    <a href="#" style="display: inline-block; margin: 0 8px; text-decoration: none; width: 36px; height: 36px; background-color: #f3f4f6; border-radius: 50%; line-height: 36px; text-align: center;">
+                        <img src="https://i.ibb.co/cKRxyCHT/Facebook-Logo-Primary.png" alt="Facebook" width="20" height="20" style="vertical-align: middle;">
+                    </a>
+
+                    <!-- Instagram -->
+                    <a href="#" style="display: inline-block; margin: 0 8px; text-decoration: none; width: 36px; height: 36px; background-color: #f3f4f6; border-radius: 50%; line-height: 36px; text-align: center;">
+                        <img src="https://i.ibb.co/Pv21MBCH/Instagram-Glyph-Gradient.png" alt="Instagram" width="20" height="20" style="vertical-align: middle;">
+                    </a>
+
+                    <!-- LinkedIn icon -->
+                    <a href="#" style="display: inline-block; margin: 0 8px; text-decoration: none; width: 36px; height: 36px; background-color: #f3f4f6; border-radius: 50%; line-height: 36px; text-align: center;">
+                        <img src="https://i.ibb.co/Gr5Jwn2/LI-In-Bug.png" alt="LinkedIn" width="20" height="20" style="vertical-align: middle;">
+                    </a>
+                </div>
+
+                <div style="height: 1px; background-color: #f3f4f6; margin: 20px 0;"></div>
+                <p style="color: #6b7280; font-size: 14px; margin: 6px 0;">© {{current_year}} CoFlex. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

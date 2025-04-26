@@ -18,7 +18,7 @@ urlpatterns = [
     path('account-recovery/', include('CoFlex_app.urls.user_account_recovery_urls')),
     path('booking/', include('CoFlex_app.urls.subscribed_user_locations_urls')),
     path('all_bookings/', include('CoFlex_app.urls.subscribed_user_bookings_history_urls')),
-    path('history/', include('CoFlex_app.urls.user_recent_actions_urls'))
+    path('history/', include('CoFlex_app.urls.user_recent_actions_urls')),
 ]
 
 if settings.DEBUG:

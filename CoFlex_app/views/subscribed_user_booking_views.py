@@ -1,12 +1,11 @@
 from datetime import date, time
 from django.contrib import messages
-from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, get_object_or_404, reverse
 from django.shortcuts import render
-from django.utils.html import escape
 from django.utils.timezone import now, localdate
 from django.http import JsonResponse
+from django.conf import settings
 from geopy.distance import geodesic
 import random
 import string
@@ -14,6 +13,7 @@ from datetime import datetime
 from ..models import VerifiedUsers, SubscribedUsers, Locations, LocationDetails, LocationAvailability, Booking, BookingDetails
 from ..forms.subscribed_user_booking_location_forms import BookingLocationForm
 from .user_recent_actions_views import user_device_activity
+from .email_functions import send_booking_confirmation_email
 
 
 @login_required
@@ -159,44 +159,20 @@ def booking_location(request, user_id, location_code):
             )
 
             try:
-                send_mail('Booking Confirmation',
-                          f'<p>Message to {escape(user.email)}',
-                          'settings.EMAIL_HOST_USER',
-                          [user.email],
-                          fail_silently=False,
-                          html_message=f"""
-                                  <html>
-                                  <body style="font-family: Arial, sans-serif; font-size: 16px; color: #333; line-height: 1.6;">
-                                      <h2 style="color: #007BFF;">Hello {escape(user.first_name)} {escape(user.last_name)},</h2>
+                # Send booking confirmation email
+                email_sent = send_booking_confirmation_email(
+                    user=user,
+                    sender_email=settings.EMAIL_HOST_USER,
+                    recipient_email=user.email,
+                    booking=booking,
+                    booking_details=booking_details,
+                    location=location
+                )
 
-                                      <p>We are pleased to confirm your booking at <b>{escape(location.location_name)}</b> 🎉</p>
+                if not email_sent:
+                    messages.warning(request,
+                                     "Booking was created but there was an error sending the confirmation email.")
 
-                                      <h3 style="color: #28A745;">Booking Details 📅</h3>
-                                      <ul>
-                                          <li><b>Booking Created:</b> {booking.created_date} at {booking.created_time.strftime('%H:%M:%S')}</li>
-                                          <li><b>Location:</b> {escape(location.location_name)}</li>
-                                          <li><b>Address:</b> {escape(location.location_details.address)}</li>
-                                          <li><b>Contact:</b> {escape(location.location_details.contact_phone)}</li>
-                                          <li><b>Website:</b> <a href="{escape(location.location_details.website)}" target="_blank">{escape(location.location_details.website)}</a></li>
-                                      </ul>
-
-                                      <h3 style="color: #DC3545;">Scheduled Timing ⏰</h3>
-                                      <ul>
-                                          <li><b>Date:</b> {booking_details.start_date}</li>
-                                          <li><b>From:</b> {booking_details.start_time}</li>
-                                          <li><b>To:</b> {booking_details.end_time}</li>
-                                      </ul>
-
-                                      <p>If you have any questions, feel free to contact us.</p>
-                                      <p>We look forward to seeing you!</p>
-
-                                      <p style="margin-top: 20px; font-size: 14px; color: #555;">
-                                          <i>This is an automated email, please do not reply.</i>
-                                      </p>
-                                  </body>
-                                  </html>
-                                  """
-                          )
             except Exception as e:
                 messages.error(request, f'Error sending verification email: {e}')
 

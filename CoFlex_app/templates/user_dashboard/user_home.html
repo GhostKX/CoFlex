@@ -1,4 +1,5 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -222,96 +223,162 @@
             <!-- Subscription Section -->
             {% if is_subscribed %}
                 <section class="subscription-details">
-                <div class="subscription-details-container">
-                    <div class="subscription-header">
-                        <div class="subscription-title-wrapper">
-                            <h2>{{ subscription_type }}</h2>
-                            <span class="badge {% if payment_status == 'active' %}badge-active{% endif %}">
-                                {{ payment_status|title }}
-                            </span>
-                        </div>
-                        <div class="subscription-meta">
-                            <div class="meta-item">
-                                <span class="material-icons">calendar_today</span>
-                                <div class="meta-content">
-                                    <span class="meta-label">Next Payment</span>
-                                    <span class="meta-value">{{ subscription_expiry|date:"M d, Y" }}</span>
-                                </div>
-                            </div>
-                            <div class="meta-item">
-                                <span class="material-icons">credit_card</span>
-                                <div class="meta-content">
-                                    <span class="meta-label">Payment Method</span>
-                                    <span class="meta-value">{{ last_four_digits }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="subscription-body">
-                        <div class="progress-section">
-                            <div class="progress-header">
-                                <h3>Subscription Period</h3>
-                                <span class="days-remaining {% if is_expiring_soon %}text-red-500{% endif %}">
-                                    {{ days_left }} days remaining
+                    <div class="subscription-details-container">
+                        <div class="subscription-header">
+                            <div class="subscription-title-wrapper">
+                                <h2>{{ subscription_plan }}</h2>
+                                <span class="badge
+                                 {% if subscription_status == 'active' %}badge-active
+                                 {% elif subscription_status == 'stopped' %}badge-stopped
+                                 {% endif %}">
+                                    {{ subscription_status|title }}
                                 </span>
                             </div>
-                            <div class="progress-bar-wrapper">
-                                <div class="progress-bar">
-                                    <div class="progress" style="width: {{ progress_width }}%"></div>
+                            <div class="subscription-meta">
+                                <div class="meta-item">
+                                    <span class="material-icons">calendar_today</span>
+                                    <div class="meta-content">
+                                        <span class="meta-label">Next Payment</span>
+                                        <span class="meta-value">{{ subscription_expiry|date:"M d, Y" }}</span>
+                                    </div>
                                 </div>
-                                <div class="progress-dates">
-                                    <span>{{ last_payment_date|date:"M d, Y" }}</span>
-                                    <span>{{ subscription_expiry|date:"M d, Y" }}</span>
+                                <div class="meta-item">
+                                    <span class="material-icons">credit_card</span>
+                                    <div class="meta-content">
+                                        <span class="meta-label">Payment Method</span>
+                                        <span class="meta-value">{{ last_four_digits }}</span>
+                                    </div>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="material-icons">verified</span>
+                                    <div class="meta-content">
+                                        <span class="meta-label">Subscription Type</span>
+                                        <span class="meta-value">{{ subscription_type }}</span>
+                                    </div>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="material-icons">replay</span>
+                                    <div class="meta-content">
+                                        <span class="meta-label">Remaining Stop Attempts</span>
+                                        <span class="meta-value">{{ remaining_stop_attempts }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="payment-history">
-                            <h3>Payment Details</h3>
-                            <div class="payment-grid">
-                                <div class="payment-item">
-                                    <span class="payment-label">Last Payment</span>
-                                    <span class="payment-value">${{ last_payment_amount }}</span>
-                                </div>
-                                <div class="payment-item">
-                                    <span class="payment-label">Payment Status</span>
-                                    <span class="payment-value status-chip">
-                                        <span class="status-dot"></span>
-                                        {{ payment_status|title }}
+                        <div class="subscription-body">
+                            <div class="progress-section">
+                                <div class="progress-header">
+                                    {% if subscription_status == 'stopped' %}
+                                        <h3>Stopped Subscription Period</h3>
+                                    {% else %}
+                                        <h3>Subscription Period</h3>
+                                    {% endif %}
+                                    <span class="days-remaining {% if is_expiring_soon %}text-red-500{% endif %}">
+                                        {{ days_left }} days remaining
                                     </span>
                                 </div>
-                                <div class="payment-item">
-                                    <span class="payment-label">Payment Method</span>
-                                    <span class="payment-value">{{ payment_method|default:"Credit Card" }}</span>
-                                </div>
-                                <div class="payment-item">
-                                    <span class="payment-label">Next Charge</span>
-                                    <span class="payment-value">${{ last_payment_amount }}</span>
+                                <div class="progress-bar-wrapper">
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: {{ progress_width }}%"></div>
+                                    </div>
+                                    <div class="progress-dates">
+                                        <span>{{ subscription_from_date|date:"M d, Y" }}</span>
+                                        <span>{{ subscription_till_date|date:"M d, Y" }}</span>
+                                    </div>
                                 </div>
                             </div>
+
+                            {% if subscription_status == 'active' %}
+                                <div class="subscription-features">
+                                    <h3>Your Plan Includes</h3>
+                                    <ul class="features-list">
+                                        {% for feature in subscription_text %}
+                                        <li>
+                                            <span class="material-icons feature-icon">check_circle</span>
+                                            <span class="feature-text">{{ feature }}</span>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+
+                            {% if subscription_status == 'active' %}
+                                <div class="payment-history">
+                                <h3>Payment Details</h3>
+                                <div class="payment-grid">
+                                    <div class="payment-item">
+                                        <span class="payment-label">Last Payment</span>
+                                        <span class="payment-value">${{ last_payment_amount }}</span>
+                                    </div>
+                                    <div class="payment-item">
+                                        <span class="payment-label">Payment Date</span>
+                                        <span class="payment-value">{{ last_payment_date|date:"M d, Y" }}</span>
+                                    </div>
+                                    <div class="payment-item">
+                                        <span class="payment-label">Payment Status</span>
+                                        <span class="payment-value status-chip">
+                                            <span class="status-dot"></span>
+                                            {{ payment_status|title }}
+                                        </span>
+                                    </div>
+                                    <div class="payment-item">
+                                        <span class="payment-label">Payment Method</span>
+                                        <span class="payment-value">{{ payment_method|default:"Credit Card" }}</span>
+                                    </div>
+                                    <div class="payment-item">
+                                        <span class="payment-label">Next Charge</span>
+                                        <span class="payment-value">${{ last_payment_amount }}</span>
+                                    </div>
+                                    <div class="payment-item">
+                                        <span class="payment-label">Next Payment Date</span>
+                                        <span class="payment-value">{{ subscription_expiry|date:"M d, Y" }}</span>
+                                    </div>
+                                    <div class="payment-item">
+                                        <span class="payment-label">Next Payment Status</span>
+                                        <span class="payment-value status-chip">
+                                            <span class="status-dot"></span>
+                                            Not Done Yet
+                                        </span>
+                                    </div>
+                                    <div class="payment-item">
+                                        <span class="payment-label">Payment Method</span>
+                                        <span class="payment-value">{{ payment_method|default:"Credit Card" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="subscription-actions">
+                            <button class="action-button primary">
+                                <span class="material-icons">upgrade</span>
+                                Change Subscription Plan
+                            </button>
+                            {% if subscription_status == 'active' %}
+                                {% if remaining_stop_attempts > 0 %}
+                                    <a href="{% url 'user_stop_subscription' user_id=user.id %}">
+                                        <button class="action-button stop">
+                                            <span class="material-icons">stop</span>
+                                            Stop Subscription
+                                        </button>
+                                    </a>
+                                {% endif %}
+                            {% else %}
+                                <button class="action-button resume" onclick="confirmResume()">
+                                    <span class="material-icons">play_arrow</span>
+                                    Resume Subscription
+                                </button>
+                            {% endif %}
+                            {% if subscription_status == 'active' or subscription_status == 'stopped' %}
+                                <button class="action-button danger">
+                                    <span class="material-icons">cancel</span>
+                                    Cancel Subscription
+                                </button>
+                            {% endif %}
                         </div>
                     </div>
-
-                    <div class="subscription-actions">
-                        {% if is_expiring_soon %}
-                        <button class="action-button secondary">
-                            <span class="material-icons">autorenew</span>
-                            Renew Plan
-                        </button>
-                        {% else %}
-                        <button class="action-button primary">
-                            <span class="material-icons">upgrade</span>
-                            Upgrade Plan
-                        </button>
-                        {% endif %}
-                        <button class="action-button danger">
-                            <span class="material-icons">stop</span>
-                            Stop Subscription
-                        </button>
-                    </div>
-                </div>
-            </section>
+                </section>
             {% else %}
                 <section class="subscription-section">
                 <h2 class="subscription-title">Choose Your Subscription Plan</h2>
@@ -334,10 +401,11 @@
                                     <ul>
                                         <li><span class="material-icons">check_circle</span> Hot Desk Access</li>
                                         <li><span class="material-icons">check_circle</span> Basic Wi-Fi</li>
+                                        <li><span class="material-icons">check_circle</span> Stop Periods: 3</li>
                                         <li><span class="material-icons">cancel</span> Meeting Rooms</li>
                                         <li><span class="material-icons">cancel</span> Premium Support</li>
                                     </ul>
-                                    <a href="{% url 'user_card_details' user_id=user.id subscription_type='basic_month' %}" class="subscription-button">Select Plan</a>
+                                    <a href="{% url 'user_card_details_verification_code_validation' user_id=user.id subscription_plan='basic_month' %}" class="subscription-button">Select Plan</a>
                                 </div>
                             </div>
 
@@ -351,9 +419,10 @@
                                         <li><span class="material-icons">check_circle</span> Dedicated Desk</li>
                                         <li><span class="material-icons">check_circle</span> Premium Wi-Fi</li>
                                         <li><span class="material-icons">check_circle</span> 10 Meeting Room Hours</li>
+                                        <li><span class="material-icons">check_circle</span> Stop Periods: 4</li>
                                         <li><span class="material-icons">cancel</span> Premium Support</li>
                                     </ul>
-                                    <a href="{% url 'user_card_details' user_id=user.id subscription_type='standard_month' %}" class="subscription-button">Select Plan</a>
+                                    <a href="{% url 'user_card_details_verification_code_validation' user_id=user.id subscription_plan='standard_month' %}" class="subscription-button">Select Plan</a>
                                 </div>
                             </div>
 
@@ -368,8 +437,9 @@
                                         <li><span class="material-icons">check_circle</span> Premium Wi-Fi</li>
                                         <li><span class="material-icons">check_circle</span> 20 Meeting Room Hours</li>
                                         <li><span class="material-icons">check_circle</span> Dedicated Support</li>
+                                        <li><span class="material-icons">check_circle</span> Stop Periods: 5</li>
                                     </ul>
-                                    <a href="{% url 'user_card_details' user_id=user.id subscription_type='vip_month' %}" class="subscription-button">Select Plan</a>
+                                    <a href="{% url 'user_card_details_verification_code_validation' user_id=user.id subscription_plan='vip_month' %}" class="subscription-button">Select Plan</a>
                                 </div>
                             </div>
 
@@ -384,9 +454,10 @@
                                         <li><span class="material-icons">check_circle</span> Hot Desk Access</li>
                                         <li><span class="material-icons">check_circle</span> Enhanced Wi-Fi</li>
                                         <li><span class="material-icons">check_circle</span> 5 Meeting Room Hours</li>
+                                        <li><span class="material-icons">check_circle</span> Stop Periods: 3</li>
                                         <li><span class="material-icons">cancel</span> Premium Support</li>
                                     </ul>
-                                    <a href="{% url 'user_card_details' user_id=user.id subscription_type='basic_quarter' %}" class="subscription-button">Select Plan</a>
+                                    <a href="{% url 'user_card_details_verification_code_validation' user_id=user.id subscription_plan='basic_quarter' %}" class="subscription-button">Select Plan</a>
                                 </div>
                             </div>
 
@@ -401,8 +472,9 @@
                                         <li><span class="material-icons">check_circle</span> Ultra-Fast Wi-Fi</li>
                                         <li><span class="material-icons">check_circle</span> 20 Meeting Room Hours</li>
                                         <li><span class="material-icons">check_circle</span> Priority Support</li>
+                                        <li><span class="material-icons">check_circle</span> Stop Periods: 4</li>
                                     </ul>
-                                    <a href="{% url 'user_card_details' user_id=user.id subscription_type='standard_quarter' %}" class="subscription-button">Select Plan</a>
+                                    <a href="{% url 'user_card_details_verification_code_validation' user_id=user.id subscription_plan='standard_quarter' %}" class="subscription-button">Select Plan</a>
                                 </div>
                             </div>
 
@@ -417,8 +489,9 @@
                                         <li><span class="material-icons">check_circle</span> Ultra-Fast Wi-Fi</li>
                                         <li><span class="material-icons">check_circle</span> Unlimited Meeting Rooms</li>
                                         <li><span class="material-icons">check_circle</span> Executive Support</li>
+                                        <li><span class="material-icons">check_circle</span> Stop Periods: 5</li>
                                     </ul>
-                                    <a href="{% url 'user_card_details' user_id=user.id subscription_type='vip_quarter' %}" class="subscription-button">Select Plan</a>
+                                    <a href="{% url 'user_card_details_verification_code_validation' user_id=user.id subscription_plan='vip_quarter' %}" class="subscription-button">Select Plan</a>
                                 </div>
                             </div>
 
@@ -434,8 +507,9 @@
                                         <li><span class="material-icons">check_circle</span> Premium Wi-Fi</li>
                                         <li><span class="material-icons">check_circle</span> 15 Meeting Room Hours</li>
                                         <li><span class="material-icons">check_circle</span> Basic Support</li>
+                                        <li><span class="material-icons">check_circle</span> Stop Periods: 3</li>
                                     </ul>
-                                    <a href="{% url 'user_card_details' user_id=user.id subscription_type='basic_semiannual' %}" class="subscription-button">Select Plan</a>
+                                    <a href="{% url 'user_card_details_verification_code_validation' user_id=user.id subscription_plan='basic_semiannual' %}" class="subscription-button">Select Plan</a>
                                 </div>
                             </div>
 
@@ -450,8 +524,9 @@
                                         <li><span class="material-icons">check_circle</span> Ultra-Fast Wi-Fi</li>
                                         <li><span class="material-icons">check_circle</span> Unlimited Meeting Rooms</li>
                                         <li><span class="material-icons">check_circle</span> Premium Support</li>
+                                        <li><span class="material-icons">check_circle</span> Stop Periods: 4</li>
                                     </ul>
-                                    <a href="{% url 'user_card_details' user_id=user.id subscription_type='standard_semiannual' %}" class="subscription-button">Select Plan</a>
+                                    <a href="{% url 'user_card_details_verification_code_validation' user_id=user.id subscription_plan='standard_semiannual' %}" class="subscription-button">Select Plan</a>
                                 </div>
                             </div>
 
@@ -466,8 +541,9 @@
                                         <li><span class="material-icons">check_circle</span> Premium Networking</li>
                                         <li><span class="material-icons">check_circle</span> Event Access</li>
                                         <li><span class="material-icons">check_circle</span> 24/7 Concierge</li>
+                                        <li><span class="material-icons">check_circle</span> Stop Periods: 5</li>
                                     </ul>
-                                    <a href="{% url 'user_card_details' user_id=user.id subscription_type='vip_semiannual' %}" class="subscription-button">Select Plan</a>
+                                    <a href="{% url 'user_card_details_verification_code_validation' user_id=user.id subscription_plan='vip_semiannual' %}" class="subscription-button">Select Plan</a>
                                 </div>
                             </div>
                         </div>
@@ -484,6 +560,46 @@
         <footer class="footer">
             <p>&copy; {% now "Y" %} CoFlex. All rights reserved.</p>
         </footer>
+
+        <div id="resumeModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="material-icons modal-icon">play_arrow</span>
+                    <h3>Resume Subscription</h3>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to resume your subscription?</p>
+                    <div class="benefit-list">
+                        <div class="benefit-item">
+                            <span class="material-icons benefit-icon">check_circle</span>
+                            <span>This will use one of your remaining stop attempts</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="material-icons benefit-icon">check_circle</span>
+                            <span>Your subscription will be active immediately</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="material-icons benefit-icon">check_circle</span>
+                            <span>You'll get full access again instantly</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <form method="POST" action="{% url 'user_resume_subscription' user_id=user.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="resume_subscription" value="true">
+                        <button type="submit" class="modal-button confirm-button">
+                            <span class="material-icons">check</span>
+                            <span>Yes, Resume</span>
+                        </button>
+                    </form>
+                    <button type="button" class="modal-button cancel-button" onclick="closeResumeModal()">
+                        <span class="material-icons">close</span>
+                        <span>No, Cancel</span>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="{% static 'CoFlex_app/js/user_dashboard_js/user_home.js' %}"></script>
@@ -495,7 +611,49 @@
                     messages.style.transition = 'opacity 1s ease';
                     messages.style.opacity = '0';
                     setTimeout(() => messages.remove(), 500);
-                }, 3000);
+                }, 4000);
+            }
+        });
+
+        const resumeModal = document.getElementById('resumeModal');
+
+        function confirmResume() {
+            resumeModal.style.display = 'flex';
+            void resumeModal.offsetWidth;
+
+            resumeModal.classList.add('modal-visible');
+            setTimeout(() => {
+                resumeModal.dataset.ready = "true";
+            }, 50);
+        }
+
+        function closeResumeModal() {
+            resumeModal.classList.remove('modal-visible');
+            setTimeout(() => {
+                resumeModal.style.display = 'none';
+                resumeModal.dataset.ready = "false";
+            }, 300);
+        }
+
+        // Updating the window click event to include the resume modal
+        window.onclick = function(event) {
+            if (event.target == resumeModal && resumeModal.dataset.ready === "true") {
+                closeResumeModal();
+            }
+            // Keep any existing modal functionality
+            if (typeof modal !== 'undefined' && event.target == modal && modal.dataset.ready === "true") {
+                closeModal();
+            }
+        }
+
+        // Updating the Resume Subscription button to use the modal
+        document.addEventListener('DOMContentLoaded', function() {
+            const resumeButton = document.querySelector('.action-button.resume');
+            if (resumeButton) {
+                resumeButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    confirmResume();
+                });
             }
         });
     </script>

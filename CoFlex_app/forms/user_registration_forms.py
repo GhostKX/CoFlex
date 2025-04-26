@@ -82,6 +82,10 @@ class BaseUserForm(UserCreationForm):
         if VerifiedUsers.objects.filter(email=email).exists():
             raise forms.ValidationError('A user with this Email Address already exists!')
 
+        if UnverifiedUsers.objects.filter(email=email).exists():
+            unverified_user_account = UnverifiedUsers.objects.get(email=email)
+            unverified_user_account.delete()
+
         return email
 
     # Validation of the form's fields

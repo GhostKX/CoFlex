@@ -1,0 +1,147 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Stop your CoFlex subscription">
+    <title>Stop Subscription - CoFlex</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="icon" href="{% static 'CoFlex_app/favicon/favicon.png' %}" type="image/x-icon" >
+    <link rel="stylesheet" href="{% static 'CoFlex_app/css/user_dashboard_css/user_stop_subscription.css' %}">
+</head>
+<body>
+    <div class="page-container">
+        <div class="login-container">
+            <!-- Brand section -->
+            <div class="brand">
+                <a href="{% url 'user_home' user_id=user.id %}" class="brand-link" aria-label="Return to CoFlex homepage">
+                    <span class="material-icons brand-icon">motion_photos_auto</span>
+                    <span class="brand-text">CoFlex</span>
+                </a>
+            </div>
+
+            <!-- Header section -->
+            <div class="header">
+                <h1 class="title">Stop Subscription</h1>
+                <p class="subtitle">Pause your subscription temporarily</p>
+            </div>
+
+            <!-- Warning Message -->
+            <div class="warning-message">
+                <span class="material-icons warning-icon">pause_circle</span>
+                <div class="warning-content">
+                    <h2>Subscription Pause</h2>
+                    <p>Stopping your subscription will:</p>
+                    <ul>
+                        <li>Pause your access to premium features</li>
+                        <li>Keep all your data intact</li>
+                        <li>Stop billing until you resume</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Recovery Notice -->
+                <div class="recovery-notice {% if stopped_days_left == 0 %}recovery-notice--expired{% endif %}">
+                    <span class="material-icons recovery-icon">
+                        {% if stopped_days_left == 0 %}error{% else %}timer{% endif %}
+                    </span>
+                    <div class="recovery-content">
+                        {% if stopped_days_left == 0 %}
+                            <strong>Pause Period Ended:</strong> Your pause allowance has expired. Please resume your subscription to regain access to premium features.
+                        {% else %}
+                            <strong>{{ stopped_duration }}-Day Pause Period:</strong> You have {{ stopped_days_left }} day{{ stopped_days_left|pluralize }} remaining in your pause allowance.
+                            During this period, your subscription will be inactive but your account will remain accessible.
+                            You can resume your subscription at any time.
+                        {% endif %}
+                    </div>
+                </div>
+
+            <!-- Messages section -->
+            {% if messages %}
+            <div class="messages" role="alert" aria-live="polite">
+                {% for message in messages %}
+                <div class="message message--{{ message.tags }}">
+                    {% if message.tags == 'error' %}
+                        <span class="material-icons message-icon">error_outline</span>
+                    {% elif message.tags == 'success' %}
+                        <span class="material-icons message-icon">check_circle</span>
+                    {% elif message.tags == 'info' %}
+                        <span class="material-icons message-icon">info</span>
+                    {% endif %}
+                    <span class="message-text">{{ message }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Stop Subscription Form -->
+            <form method="POST" class="login-form" id="stopSubscriptionForm" novalidate>
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="password1" class="form-label">Password</label>
+                    <div class="input-wrapper">
+                        <span class="material-icons input-icon">lock</span>
+                        <input type="password" id="password1" name="password1" required
+                               placeholder="Enter your password">
+                    </div>
+                    {% if form.password1.errors %}
+                    <div class="error-message">
+                        {% for error in form.password1.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="password2" class="form-label">Confirm Password</label>
+                    <div class="input-wrapper">
+                        <span class="material-icons input-icon">lock_clock</span>
+                        <input type="password" id="password2" name="password2" required
+                               placeholder="Confirm your password">
+                    </div>
+                    {% if form.password2.errors %}
+                    <div class="error-message">
+                        {% for error in form.password2.errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="confirmStop" name="confirm_stop" required>
+                        <span class="checkmark"></span>
+                        I understand my subscription will be paused for up to {{ stopped_days_left }} day{{ stopped_days_left|pluralize }}
+                    </label>
+                </div>
+
+
+                <div class="button-group">
+                    <a href="{% url 'user_home' user_id=user.id %}" class="cancel-button">
+                        <span class="material-icons button-icon">arrow_back</span>
+                        <span class="button-text">Cancel</span>
+                    </a>
+                    <button type="submit" class="submit-button stop-button" disabled>
+                        <span class="material-icons button-icon">pause_circle_outline</span>
+                        <span class="button-text">Stop Subscription</span>
+                    </button>
+                </div>
+            </form>
+
+            <div class="footer">
+                <p class="help-text">
+                    Need help?
+                    <a href="#" class="help-link">Contact Support</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'CoFlex_app/js/user_dashboard_js/user_stop_subscription.js' %}" defer></script>
+</body>
+</html>

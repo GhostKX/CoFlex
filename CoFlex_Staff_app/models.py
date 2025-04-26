@@ -170,14 +170,65 @@ class StaffDeviceActivities(models.Model):
         return self.staff_session.staff.staff_email
 
 
-# C-Space Yunusabad
-class C_Space_Yunusabad_Bookings(models.Model):
+# Locations table storing the data of all locations
+class StaffLocations(models.Model):
+    location_name = models.CharField(null=False, blank=False, max_length=250)
+    location_code = models.CharField(unique=True, null=False, blank=False, max_length=100)
+    location_latitude = models.FloatField(null=False, blank=False)
+    location_longitude = models.FloatField(null=False, blank=False)
+    # icon_path = models.CharField(null=False, blank=False, max_length=250, default='/static/CoFlex_app/icons/bb.png')
+
+    class Meta:
+        verbose_name = 'Staff Location'
+        verbose_name_plural = 'Staff Locations'
+
+    def __str__(self):
+        return self.location_code
+
+
+# Location Details table storing details of the locations
+class StaffLocationDetails(models.Model):
+    location = models.OneToOneField(StaffLocations, on_delete=models.CASCADE, related_name='staff_location_details')
+    address = models.CharField(null=False, blank=False, max_length=250)
+    contact_phone = models.CharField(null=False, blank=False, max_length=250)
+    working_hours = models.CharField(null=False, blank=False, max_length=250)
+    # image_path = models.CharField( null=False, blank=False, max_length=250, default='/static/CoFlex_app/location_images/bb.jpg')
+    website = models.URLField(null=False, blank=False, max_length=250)
+    default_availability = models.IntegerField(null=False, blank=False)
+
+    class Meta:
+        verbose_name = 'Staff Location Detail'
+        verbose_name_plural = 'Staff Locations Details'
+
+    def __str__(self):
+        return f'Location Details of {self.location.location_code}'
+
+
+# Location Availability table storing availability of the locations
+class StaffLocationAvailability(models.Model):
+    location = models.ForeignKey(StaffLocations, on_delete=models.CASCADE, related_name='staff_location_availability')
+    date = models.DateField(blank=False, null=False)
+    availability = models.IntegerField(blank=False, null=True, default=0)
+
+    class Meta:
+        verbose_name = 'Staff Location Availability'
+        verbose_name_plural = 'Staff Locations Availabilities'
+        unique_together = ('location', 'date')  # Preventing duplicate location and date a pair of variables
+
+    def __str__(self):
+        return f'Location Availability of {self.location.location_code}'
+
+
+# All Locations Bookings
+class All_Locations_Bookings(models.Model):
     user_first_name = models.CharField(max_length=100, null=False, blank=False)
     user_last_name = models.CharField(max_length=100, null=False, blank=False)
     user_email = models.EmailField(null=False, blank=False)
     user_phone_number = models.CharField(null=True, blank=True, max_length=13)
 
     booking_id = models.CharField(unique=True, max_length=12, blank=False, null=False)
+
+    location = models.ForeignKey(StaffLocations, on_delete=models.CASCADE, related_name='location_bookings')
     location_code = models.CharField(null=False, blank=False, max_length=100)
     location_name = models.CharField(null=False, blank=False, max_length=250)
 
@@ -185,16 +236,17 @@ class C_Space_Yunusabad_Bookings(models.Model):
     created_time = models.TimeField(null=False, blank=False)
 
     class Meta:
-        verbose_name = 'C-Space Yunusabad Booking'
-        verbose_name_plural = 'C-Space Yunusabad Bookings'
+        verbose_name = 'All Locations Booking'
+        verbose_name_plural = 'All Locations Bookings'
 
     def __str__(self):
         return self.booking_id
 
 
-class C_Space_Yunusabad_Bookings_Details(models.Model):
-    location_booking = models.OneToOneField(C_Space_Yunusabad_Bookings, on_delete=models.CASCADE,
-                                            related_name='c_space_yunusabad_bookings_details')
+# All Locations Bookings Details
+class All_Locations_Bookings_Details(models.Model):
+    location_booking = models.OneToOneField(All_Locations_Bookings, on_delete=models.CASCADE,
+                                            related_name='booking_details')
     start_date = models.DateField(null=False, blank=False)
     start_time = models.TimeField(null=False, blank=False)
     end_date = models.DateField(null=False, blank=False)
@@ -214,722 +266,8 @@ class C_Space_Yunusabad_Bookings_Details(models.Model):
     ], default='Booked')
 
     class Meta:
-        verbose_name = 'C-Space Yunusabad Bookings Detail'
-        verbose_name_plural = 'C-Space Yunusabad Bookings Details'
+        verbose_name = 'All Locations Bookings Detail'
+        verbose_name_plural = 'All Locations Bookings Details'
 
     def __str__(self):
-        return f'Location Booking Details of {self.location_booking.booking_id}'
-
-
-# C-Space Modera
-class C_Space_Modera_Bookings(models.Model):
-    user_first_name = models.CharField(max_length=100, null=False, blank=False)
-    user_last_name = models.CharField(max_length=100, null=False, blank=False)
-    user_email = models.EmailField(null=False, blank=False)
-    user_phone_number = models.CharField(null=True, blank=True, max_length=13)
-
-    booking_id = models.CharField(unique=True, max_length=12, blank=False, null=False)
-    location_code = models.CharField(null=False, blank=False, max_length=100)
-    location_name = models.CharField(null=False, blank=False, max_length=250)
-
-    created_date = models.DateField(null=False, blank=False)
-    created_time = models.TimeField(null=False, blank=False)
-
-    class Meta:
-        verbose_name = 'C-Space Modera Booking'
-        verbose_name_plural = 'C-Space Modera Bookings'
-
-    def __str__(self):
-        return self.booking_id
-
-
-class C_Space_Modera_Bookings_Details(models.Model):
-    location_booking = models.OneToOneField(C_Space_Modera_Bookings, on_delete=models.CASCADE,
-                                            related_name='c_space_modera_bookings_details')
-    start_date = models.DateField(null=False, blank=False)
-    start_time = models.TimeField(null=False, blank=False)
-    end_date = models.DateField(null=False, blank=False)
-    end_time = models.TimeField(null=False, blank=False)
-
-    duration = models.DecimalField(null=True, blank=True, max_digits=3, decimal_places=2)
-    actual_start_time = models.DateTimeField(null=True, blank=True)
-    actual_end_time = models.DateTimeField(null=True, blank=True)
-
-    special_requests = models.CharField(null=False, blank=False, max_length=250, default='No Requests')
-    status = models.CharField(max_length=20, choices=[
-        ('Booked', 'Booked'),
-        ('In Progress', 'In Progress'),
-        ('Finished', 'Finished'),
-        ('Due Out', 'Due Out'),
-        ('Cancelled', 'Cancelled'),
-    ], default='Booked')
-
-    class Meta:
-        verbose_name = 'C-Space Modera Bookings Detail'
-        verbose_name_plural = 'C-Space Modera Bookings Details'
-
-    def __str__(self):
-        return f'Location Booking Details of {self.location_booking.booking_id}'
-
-
-# C-Space Labzak
-class C_Space_Labzak_Bookings(models.Model):
-    user_first_name = models.CharField(max_length=100, null=False, blank=False)
-    user_last_name = models.CharField(max_length=100, null=False, blank=False)
-    user_email = models.EmailField(null=False, blank=False)
-    user_phone_number = models.CharField(null=True, blank=True, max_length=13)
-
-    booking_id = models.CharField(unique=True, max_length=12, blank=False, null=False)
-    location_code = models.CharField(null=False, blank=False, max_length=100)
-    location_name = models.CharField(null=False, blank=False, max_length=250)
-
-    created_date = models.DateField(null=False, blank=False)
-    created_time = models.TimeField(null=False, blank=False)
-
-    class Meta:
-        verbose_name = 'C-Space Labzak Booking'
-        verbose_name_plural = 'C-Space Labzak Bookings'
-
-    def __str__(self):
-        return self.booking_id
-
-
-class C_Space_Labzak_Bookings_Details(models.Model):
-    location_booking = models.OneToOneField(C_Space_Modera_Bookings, on_delete=models.CASCADE,
-                                            related_name='c_space_labzak_bookings_details')
-    start_date = models.DateField(null=False, blank=False)
-    start_time = models.TimeField(null=False, blank=False)
-    end_date = models.DateField(null=False, blank=False)
-    end_time = models.TimeField(null=False, blank=False)
-
-    duration = models.DecimalField(null=True, blank=True, max_digits=3, decimal_places=2)
-    actual_start_time = models.DateTimeField(null=True, blank=True)
-    actual_end_time = models.DateTimeField(null=True, blank=True)
-
-    special_requests = models.CharField(null=False, blank=False, max_length=250, default='No Requests')
-    status = models.CharField(max_length=20, choices=[
-        ('Booked', 'Booked'),
-        ('In Progress', 'In Progress'),
-        ('Finished', 'Finished'),
-        ('Due Out', 'Due Out'),
-        ('Cancelled', 'Cancelled'),
-    ], default='Booked')
-
-    class Meta:
-        verbose_name = 'C-Space Labzak Bookings Detail'
-        verbose_name_plural = 'C-Space Labzak Bookings Details'
-
-    def __str__(self):
-        return f'Location Booking Details of {self.location_booking.booking_id}'
-
-
-# C-Space Airport
-class C_Space_Airport_Bookings(models.Model):
-    user_first_name = models.CharField(max_length=100, null=False, blank=False)
-    user_last_name = models.CharField(max_length=100, null=False, blank=False)
-    user_email = models.EmailField(null=False, blank=False)
-    user_phone_number = models.CharField(null=True, blank=True, max_length=13)
-
-    booking_id = models.CharField(unique=True, max_length=12, blank=False, null=False)
-    location_code = models.CharField(null=False, blank=False, max_length=100)
-    location_name = models.CharField(null=False, blank=False, max_length=250)
-
-    created_date = models.DateField(null=False, blank=False)
-    created_time = models.TimeField(null=False, blank=False)
-
-    class Meta:
-        verbose_name = 'C-Space Airport Booking'
-        verbose_name_plural = 'C-Space Airport Bookings'
-
-    def __str__(self):
-        return self.booking_id
-
-
-class C_Space_Airport_Bookings_Details(models.Model):
-    location_booking = models.OneToOneField(C_Space_Modera_Bookings, on_delete=models.CASCADE,
-                                            related_name='c_space_airport_bookings_details')
-    start_date = models.DateField(null=False, blank=False)
-    start_time = models.TimeField(null=False, blank=False)
-    end_date = models.DateField(null=False, blank=False)
-    end_time = models.TimeField(null=False, blank=False)
-
-    duration = models.DecimalField(null=True, blank=True, max_digits=3, decimal_places=2)
-    actual_start_time = models.DateTimeField(null=True, blank=True)
-    actual_end_time = models.DateTimeField(null=True, blank=True)
-
-    special_requests = models.CharField(null=False, blank=False, max_length=250, default='No Requests')
-    status = models.CharField(max_length=20, choices=[
-        ('Booked', 'Booked'),
-        ('In Progress', 'In Progress'),
-        ('Finished', 'Finished'),
-        ('Due Out', 'Due Out'),
-        ('Cancelled', 'Cancelled'),
-    ], default='Booked')
-
-    class Meta:
-        verbose_name = 'C-Space Airport Bookings Detail'
-        verbose_name_plural = 'C-Space Airport Bookings Details'
-
-    def __str__(self):
-        return f'Location Booking Details of {self.location_booking.booking_id}'
-
-
-# C-Space Chust
-class C_Space_Chust_Bookings(models.Model):
-    user_first_name = models.CharField(max_length=100, null=False, blank=False)
-    user_last_name = models.CharField(max_length=100, null=False, blank=False)
-    user_email = models.EmailField(null=False, blank=False)
-    user_phone_number = models.CharField(null=True, blank=True, max_length=13)
-
-    booking_id = models.CharField(unique=True, max_length=12, blank=False, null=False)
-    location_code = models.CharField(null=False, blank=False, max_length=100)
-    location_name = models.CharField(null=False, blank=False, max_length=250)
-
-    created_date = models.DateField(null=False, blank=False)
-    created_time = models.TimeField(null=False, blank=False)
-
-    class Meta:
-        verbose_name = 'C-Space Chust Booking'
-        verbose_name_plural = 'C-Space Chust Bookings'
-
-    def __str__(self):
-        return self.booking_id
-
-
-class C_Space_Chust_Bookings_Details(models.Model):
-    location_booking = models.OneToOneField(C_Space_Modera_Bookings, on_delete=models.CASCADE,
-                                            related_name='c_space_chust_bookings_details')
-    start_date = models.DateField(null=False, blank=False)
-    start_time = models.TimeField(null=False, blank=False)
-    end_date = models.DateField(null=False, blank=False)
-    end_time = models.TimeField(null=False, blank=False)
-
-    duration = models.DecimalField(null=True, blank=True, max_digits=3, decimal_places=2)
-    actual_start_time = models.DateTimeField(null=True, blank=True)
-    actual_end_time = models.DateTimeField(null=True, blank=True)
-
-    special_requests = models.CharField(null=False, blank=False, max_length=250, default='No Requests')
-    status = models.CharField(max_length=20, choices=[
-        ('Booked', 'Booked'),
-        ('In Progress', 'In Progress'),
-        ('Finished', 'Finished'),
-        ('Due Out', 'Due Out'),
-        ('Cancelled', 'Cancelled'),
-    ], default='Booked')
-
-    class Meta:
-        verbose_name = 'C-Space Chust Bookings Detail'
-        verbose_name_plural = 'C-Space Chust Bookings Details'
-
-    def __str__(self):
-        return f'Location Booking Details of {self.location_booking.booking_id}'
-
-
-# C-Space Elbek
-class C_Space_Elbek_Bookings(models.Model):
-    user_first_name = models.CharField(max_length=100, null=False, blank=False)
-    user_last_name = models.CharField(max_length=100, null=False, blank=False)
-    user_email = models.EmailField(null=False, blank=False)
-    user_phone_number = models.CharField(null=True, blank=True, max_length=13)
-
-    booking_id = models.CharField(unique=True, max_length=12, blank=False, null=False)
-    location_code = models.CharField(null=False, blank=False, max_length=100)
-    location_name = models.CharField(null=False, blank=False, max_length=250)
-
-    created_date = models.DateField(null=False, blank=False)
-    created_time = models.TimeField(null=False, blank=False)
-
-    class Meta:
-        verbose_name = 'C-Space Elbek Booking'
-        verbose_name_plural = 'C-Space Elbek Bookings'
-
-    def __str__(self):
-        return self.booking_id
-
-
-class C_Space_Elbek_Bookings_Details(models.Model):
-    location_booking = models.OneToOneField(C_Space_Modera_Bookings, on_delete=models.CASCADE,
-                                            related_name='c_space_elbek_bookings_details')
-    start_date = models.DateField(null=False, blank=False)
-    start_time = models.TimeField(null=False, blank=False)
-    end_date = models.DateField(null=False, blank=False)
-    end_time = models.TimeField(null=False, blank=False)
-
-    duration = models.DecimalField(null=True, blank=True, max_digits=3, decimal_places=2)
-    actual_start_time = models.DateTimeField(null=True, blank=True)
-    actual_end_time = models.DateTimeField(null=True, blank=True)
-
-    special_requests = models.CharField(null=False, blank=False, max_length=250, default='No Requests')
-    status = models.CharField(max_length=20, choices=[
-        ('Booked', 'Booked'),
-        ('In Progress', 'In Progress'),
-        ('Finished', 'Finished'),
-        ('Due Out', 'Due Out'),
-        ('Cancelled', 'Cancelled'),
-    ], default='Booked')
-
-    class Meta:
-        verbose_name = 'C-Space Elbek Bookings Detail'
-        verbose_name_plural = 'C-Space Elbek Bookings Details'
-
-    def __str__(self):
-        return f'Location Booking Details of {self.location_booking.booking_id}'
-
-
-# Ground Zero Minor
-class Ground_Zero_Minor_Bookings(models.Model):
-    user_first_name = models.CharField(max_length=100, null=False, blank=False)
-    user_last_name = models.CharField(max_length=100, null=False, blank=False)
-    user_email = models.EmailField(null=False, blank=False)
-    user_phone_number = models.CharField(null=True, blank=True, max_length=13)
-
-    booking_id = models.CharField(unique=True, max_length=12, blank=False, null=False)
-    location_code = models.CharField(null=False, blank=False, max_length=100)
-    location_name = models.CharField(null=False, blank=False, max_length=250)
-
-    created_date = models.DateField(null=False, blank=False)
-    created_time = models.TimeField(null=False, blank=False)
-
-    class Meta:
-        verbose_name = 'Ground Zero Minor Booking'
-        verbose_name_plural = 'Ground Zero Minor Bookings'
-
-    def __str__(self):
-        return self.booking_id
-
-
-class Ground_Zero_Minor_Bookings_Details(models.Model):
-    location_booking = models.OneToOneField(C_Space_Modera_Bookings, on_delete=models.CASCADE,
-                                            related_name='ground_zero_minor_bookings_details')
-    start_date = models.DateField(null=False, blank=False)
-    start_time = models.TimeField(null=False, blank=False)
-    end_date = models.DateField(null=False, blank=False)
-    end_time = models.TimeField(null=False, blank=False)
-
-    duration = models.DecimalField(null=True, blank=True, max_digits=3, decimal_places=2)
-    actual_start_time = models.DateTimeField(null=True, blank=True)
-    actual_end_time = models.DateTimeField(null=True, blank=True)
-
-    special_requests = models.CharField(null=False, blank=False, max_length=250, default='No Requests')
-    status = models.CharField(max_length=20, choices=[
-        ('Booked', 'Booked'),
-        ('In Progress', 'In Progress'),
-        ('Finished', 'Finished'),
-        ('Due Out', 'Due Out'),
-        ('Cancelled', 'Cancelled'),
-    ], default='Booked')
-
-    class Meta:
-        verbose_name = 'Ground Zero Minor Bookings Detail'
-        verbose_name_plural = 'Ground Zero Minor Bookings Details'
-
-    def __str__(self):
-        return f'Location Booking Details of {self.location_booking.booking_id}'
-
-
-# Ground Zero Sharq
-class Ground_Zero_Sharq_Bookings(models.Model):
-    user_first_name = models.CharField(max_length=100, null=False, blank=False)
-    user_last_name = models.CharField(max_length=100, null=False, blank=False)
-    user_email = models.EmailField(null=False, blank=False)
-    user_phone_number = models.CharField(null=True, blank=True, max_length=13)
-
-    booking_id = models.CharField(unique=True, max_length=12, blank=False, null=False)
-    location_code = models.CharField(null=False, blank=False, max_length=100)
-    location_name = models.CharField(null=False, blank=False, max_length=250)
-
-    created_date = models.DateField(null=False, blank=False)
-    created_time = models.TimeField(null=False, blank=False)
-
-    class Meta:
-        verbose_name = 'Ground Zero Sharq Booking'
-        verbose_name_plural = 'Ground Zero Sharq Bookings'
-
-    def __str__(self):
-        return self.booking_id
-
-
-class Ground_Zero_Sharq_Bookings_Details(models.Model):
-    location_booking = models.OneToOneField(C_Space_Modera_Bookings, on_delete=models.CASCADE,
-                                            related_name='ground_zero_sharq_bookings_details')
-    start_date = models.DateField(null=False, blank=False)
-    start_time = models.TimeField(null=False, blank=False)
-    end_date = models.DateField(null=False, blank=False)
-    end_time = models.TimeField(null=False, blank=False)
-
-    duration = models.DecimalField(null=True, blank=True, max_digits=3, decimal_places=2)
-    actual_start_time = models.DateTimeField(null=True, blank=True)
-    actual_end_time = models.DateTimeField(null=True, blank=True)
-
-    special_requests = models.CharField(null=False, blank=False, max_length=250, default='No Requests')
-    status = models.CharField(max_length=20, choices=[
-        ('Booked', 'Booked'),
-        ('In Progress', 'In Progress'),
-        ('Finished', 'Finished'),
-        ('Due Out', 'Due Out'),
-        ('Cancelled', 'Cancelled'),
-    ], default='Booked')
-
-    class Meta:
-        verbose_name = 'Ground Zero Sharq Bookings Detail'
-        verbose_name_plural = 'Ground Zero Sharq Bookings Details'
-
-    def __str__(self):
-        return f'Location Booking Details of {self.location_booking.booking_id}'
-
-
-# Ground Zero Kitob Olami
-class Ground_Zero_Kitob_Olami_Bookings(models.Model):
-    user_first_name = models.CharField(max_length=100, null=False, blank=False)
-    user_last_name = models.CharField(max_length=100, null=False, blank=False)
-    user_email = models.EmailField(null=False, blank=False)
-    user_phone_number = models.CharField(null=True, blank=True, max_length=13)
-
-    booking_id = models.CharField(unique=True, max_length=12, blank=False, null=False)
-    location_code = models.CharField(null=False, blank=False, max_length=100)
-    location_name = models.CharField(null=False, blank=False, max_length=250)
-
-    created_date = models.DateField(null=False, blank=False)
-    created_time = models.TimeField(null=False, blank=False)
-
-    class Meta:
-        verbose_name = 'Ground Zero Kitob Olami Booking'
-        verbose_name_plural = 'Ground Zero Kitob Olami Bookings'
-
-    def __str__(self):
-        return self.booking_id
-
-
-class Ground_Zero_Kitob_Olami_Bookings_Details(models.Model):
-    location_booking = models.OneToOneField(C_Space_Modera_Bookings, on_delete=models.CASCADE,
-                                            related_name='ground_zero_kitob_olami_bookings_details')
-    start_date = models.DateField(null=False, blank=False)
-    start_time = models.TimeField(null=False, blank=False)
-    end_date = models.DateField(null=False, blank=False)
-    end_time = models.TimeField(null=False, blank=False)
-
-    duration = models.DecimalField(null=True, blank=True, max_digits=3, decimal_places=2)
-    actual_start_time = models.DateTimeField(null=True, blank=True)
-    actual_end_time = models.DateTimeField(null=True, blank=True)
-
-    special_requests = models.CharField(null=False, blank=False, max_length=250, default='No Requests')
-    status = models.CharField(max_length=20, choices=[
-        ('Booked', 'Booked'),
-        ('In Progress', 'In Progress'),
-        ('Finished', 'Finished'),
-        ('Due Out', 'Due Out'),
-        ('Cancelled', 'Cancelled'),
-    ], default='Booked')
-
-    class Meta:
-        verbose_name = 'Ground Zero Kitob Olami Bookings Detail'
-        verbose_name_plural = 'Ground Zero Kitob Olami Bookings Details'
-
-    def __str__(self):
-        return f'Location Booking Details of {self.location_booking.booking_id}'
-
-
-# U-Enter
-class U_Enter_Bookings(models.Model):
-    user_first_name = models.CharField(max_length=100, null=False, blank=False)
-    user_last_name = models.CharField(max_length=100, null=False, blank=False)
-    user_email = models.EmailField(null=False, blank=False)
-    user_phone_number = models.CharField(null=True, blank=True, max_length=13)
-
-    booking_id = models.CharField(unique=True, max_length=12, blank=False, null=False)
-    location_code = models.CharField(null=False, blank=False, max_length=100)
-    location_name = models.CharField(null=False, blank=False, max_length=250)
-
-    created_date = models.DateField(null=False, blank=False)
-    created_time = models.TimeField(null=False, blank=False)
-
-    class Meta:
-        verbose_name = 'U-Enter Booking'
-        verbose_name_plural = 'U-Enter Bookings'
-
-    def __str__(self):
-        return self.booking_id
-
-
-class U_Enter_Bookings_Details(models.Model):
-    location_booking = models.OneToOneField(C_Space_Modera_Bookings, on_delete=models.CASCADE,
-                                            related_name='u_enter_bookings_details')
-    start_date = models.DateField(null=False, blank=False)
-    start_time = models.TimeField(null=False, blank=False)
-    end_date = models.DateField(null=False, blank=False)
-    end_time = models.TimeField(null=False, blank=False)
-
-    duration = models.DecimalField(null=True, blank=True, max_digits=3, decimal_places=2)
-    actual_start_time = models.DateTimeField(null=True, blank=True)
-    actual_end_time = models.DateTimeField(null=True, blank=True)
-
-    special_requests = models.CharField(null=False, blank=False, max_length=250, default='No Requests')
-    status = models.CharField(max_length=20, choices=[
-        ('Booked', 'Booked'),
-        ('In Progress', 'In Progress'),
-        ('Finished', 'Finished'),
-        ('Due Out', 'Due Out'),
-        ('Cancelled', 'Cancelled'),
-    ], default='Booked')
-
-    class Meta:
-        verbose_name = 'U-Enter Bookings Detail'
-        verbose_name_plural = 'U-Enter Bookings Details'
-
-    def __str__(self):
-        return f'Location Booking Details of {self.location_booking.booking_id}'
-
-
-# Impact Coworking
-class Impact_Coworking_Bookings(models.Model):
-    user_first_name = models.CharField(max_length=100, null=False, blank=False)
-    user_last_name = models.CharField(max_length=100, null=False, blank=False)
-    user_email = models.EmailField(null=False, blank=False)
-    user_phone_number = models.CharField(null=True, blank=True, max_length=13)
-
-    booking_id = models.CharField(unique=True, max_length=12, blank=False, null=False)
-    location_code = models.CharField(null=False, blank=False, max_length=100)
-    location_name = models.CharField(null=False, blank=False, max_length=250)
-
-    created_date = models.DateField(null=False, blank=False)
-    created_time = models.TimeField(null=False, blank=False)
-
-    class Meta:
-        verbose_name = 'Impact Coworking Booking'
-        verbose_name_plural = 'Impact Coworking Bookings'
-
-    def __str__(self):
-        return self.booking_id
-
-
-class Impact_Coworking_Bookings_Details(models.Model):
-    location_booking = models.OneToOneField(C_Space_Modera_Bookings, on_delete=models.CASCADE,
-                                            related_name='impact_coworking_bookings_details')
-    start_date = models.DateField(null=False, blank=False)
-    start_time = models.TimeField(null=False, blank=False)
-    end_date = models.DateField(null=False, blank=False)
-    end_time = models.TimeField(null=False, blank=False)
-
-    duration = models.DecimalField(null=True, blank=True, max_digits=3, decimal_places=2)
-    actual_start_time = models.DateTimeField(null=True, blank=True)
-    actual_end_time = models.DateTimeField(null=True, blank=True)
-
-    special_requests = models.CharField(null=False, blank=False, max_length=250, default='No Requests')
-    status = models.CharField(max_length=20, choices=[
-        ('Booked', 'Booked'),
-        ('In Progress', 'In Progress'),
-        ('Finished', 'Finished'),
-        ('Due Out', 'Due Out'),
-        ('Cancelled', 'Cancelled'),
-    ], default='Booked')
-
-    class Meta:
-        verbose_name = 'Impact Coworking Bookings Detail'
-        verbose_name_plural = 'Impact Coworking Bookings Details'
-
-    def __str__(self):
-        return f'Location Booking Details of {self.location_booking.booking_id}'
-
-
-# Impulse Coworking
-class Impulse_Coworking_Bookings(models.Model):
-    user_first_name = models.CharField(max_length=100, null=False, blank=False)
-    user_last_name = models.CharField(max_length=100, null=False, blank=False)
-    user_email = models.EmailField(null=False, blank=False)
-    user_phone_number = models.CharField(null=True, blank=True, max_length=13)
-
-    booking_id = models.CharField(unique=True, max_length=12, blank=False, null=False)
-    location_code = models.CharField(null=False, blank=False, max_length=100)
-    location_name = models.CharField(null=False, blank=False, max_length=250)
-
-    created_date = models.DateField(null=False, blank=False)
-    created_time = models.TimeField(null=False, blank=False)
-
-    class Meta:
-        verbose_name = 'Impulse Coworking Booking'
-        verbose_name_plural = 'Impulse Coworking Bookings'
-
-    def __str__(self):
-        return self.booking_id
-
-
-class Impulse_Coworking_Bookings_Details(models.Model):
-    location_booking = models.OneToOneField(C_Space_Modera_Bookings, on_delete=models.CASCADE,
-                                            related_name='impulse_coworking_bookings_details')
-    start_date = models.DateField(null=False, blank=False)
-    start_time = models.TimeField(null=False, blank=False)
-    end_date = models.DateField(null=False, blank=False)
-    end_time = models.TimeField(null=False, blank=False)
-
-    duration = models.DecimalField(null=True, blank=True, max_digits=3, decimal_places=2)
-    actual_start_time = models.DateTimeField(null=True, blank=True)
-    actual_end_time = models.DateTimeField(null=True, blank=True)
-
-    special_requests = models.CharField(null=False, blank=False, max_length=250, default='No Requests')
-    status = models.CharField(max_length=20, choices=[
-        ('Booked', 'Booked'),
-        ('In Progress', 'In Progress'),
-        ('Finished', 'Finished'),
-        ('Due Out', 'Due Out'),
-        ('Cancelled', 'Cancelled'),
-    ], default='Booked')
-
-    class Meta:
-        verbose_name = 'Impulse Coworking Bookings Detail'
-        verbose_name_plural = 'Impulse Coworking Bookings Details'
-
-    def __str__(self):
-        return f'Location Booking Details of {self.location_booking.booking_id}'
-
-
-# HUB Coworking
-class Hub_Coworking_Bookings(models.Model):
-    user_first_name = models.CharField(max_length=100, null=False, blank=False)
-    user_last_name = models.CharField(max_length=100, null=False, blank=False)
-    user_email = models.EmailField(null=False, blank=False)
-    user_phone_number = models.CharField(null=True, blank=True, max_length=13)
-
-    booking_id = models.CharField(unique=True, max_length=12, blank=False, null=False)
-    location_code = models.CharField(null=False, blank=False, max_length=100)
-    location_name = models.CharField(null=False, blank=False, max_length=250)
-
-    created_date = models.DateField(null=False, blank=False)
-    created_time = models.TimeField(null=False, blank=False)
-
-    class Meta:
-        verbose_name = 'HUB Coworking Booking'
-        verbose_name_plural = 'HUB Coworking Bookings'
-
-    def __str__(self):
-        return self.booking_id
-
-
-class Hub_Coworking_Bookings_Details(models.Model):
-    location_booking = models.OneToOneField(C_Space_Modera_Bookings, on_delete=models.CASCADE,
-                                            related_name='hub_coworking_bookings_details')
-    start_date = models.DateField(null=False, blank=False)
-    start_time = models.TimeField(null=False, blank=False)
-    end_date = models.DateField(null=False, blank=False)
-    end_time = models.TimeField(null=False, blank=False)
-
-    duration = models.DecimalField(null=True, blank=True, max_digits=3, decimal_places=2)
-    actual_start_time = models.DateTimeField(null=True, blank=True)
-    actual_end_time = models.DateTimeField(null=True, blank=True)
-
-    special_requests = models.CharField(null=False, blank=False, max_length=250, default='No Requests')
-    status = models.CharField(max_length=20, choices=[
-        ('Booked', 'Booked'),
-        ('In Progress', 'In Progress'),
-        ('Finished', 'Finished'),
-        ('Due Out', 'Due Out'),
-        ('Cancelled', 'Cancelled'),
-    ], default='Booked')
-
-    class Meta:
-        verbose_name = 'HUB Coworking Bookings Detail'
-        verbose_name_plural = 'HUB Coworking Bookings Details'
-
-    def __str__(self):
-        return f'Location Booking Details of {self.location_booking.booking_id}'
-
-
-# BB Works
-class Bb_Works_Bookings(models.Model):
-    user_first_name = models.CharField(max_length=100, null=False, blank=False)
-    user_last_name = models.CharField(max_length=100, null=False, blank=False)
-    user_email = models.EmailField(null=False, blank=False)
-    user_phone_number = models.CharField(null=True, blank=True, max_length=13)
-
-    booking_id = models.CharField(unique=True, max_length=12, blank=False, null=False)
-    location_code = models.CharField(null=False, blank=False, max_length=100)
-    location_name = models.CharField(null=False, blank=False, max_length=250)
-
-    created_date = models.DateField(null=False, blank=False)
-    created_time = models.TimeField(null=False, blank=False)
-
-    class Meta:
-        verbose_name = 'BB Works Booking'
-        verbose_name_plural = 'BB Works Bookings'
-
-    def __str__(self):
-        return self.booking_id
-
-
-class Bb_Works_Bookings_Details(models.Model):
-    location_booking = models.OneToOneField(C_Space_Modera_Bookings, on_delete=models.CASCADE,
-                                            related_name='Bb_works_bookings_details')
-    start_date = models.DateField(null=False, blank=False)
-    start_time = models.TimeField(null=False, blank=False)
-    end_date = models.DateField(null=False, blank=False)
-    end_time = models.TimeField(null=False, blank=False)
-
-    duration = models.DecimalField(null=True, blank=True, max_digits=3, decimal_places=2)
-    actual_start_time = models.DateTimeField(null=True, blank=True)
-    actual_end_time = models.DateTimeField(null=True, blank=True)
-
-    special_requests = models.CharField(null=False, blank=False, max_length=250, default='No Requests')
-    status = models.CharField(max_length=20, choices=[
-        ('Booked', 'Booked'),
-        ('In Progress', 'In Progress'),
-        ('Finished', 'Finished'),
-        ('Due Out', 'Due Out'),
-        ('Cancelled', 'Cancelled'),
-    ], default='Booked')
-
-    class Meta:
-        verbose_name = 'BB Works Bookings Detail'
-        verbose_name_plural = 'BB Works Bookings Details'
-
-    def __str__(self):
-        return f'Location Booking Details of {self.location_booking.booking_id}'
-
-
-# Wiut
-class Wiut_Bookings(models.Model):
-    user_first_name = models.CharField(max_length=100, null=False, blank=False)
-    user_last_name = models.CharField(max_length=100, null=False, blank=False)
-    user_email = models.EmailField(null=False, blank=False)
-    user_phone_number = models.CharField(null=True, blank=True, max_length=13)
-
-    booking_id = models.CharField(unique=True, max_length=12, blank=False, null=False)
-    location_code = models.CharField(null=False, blank=False, max_length=100)
-    location_name = models.CharField(null=False, blank=False, max_length=250)
-
-    created_date = models.DateField(null=False, blank=False)
-    created_time = models.TimeField(null=False, blank=False)
-
-    class Meta:
-        verbose_name = 'Wiut Booking'
-        verbose_name_plural = 'Wiut Bookings'
-
-    def __str__(self):
-        return self.booking_id
-
-
-class Wiut_Bookings_Details(models.Model):
-    location_booking = models.OneToOneField(C_Space_Modera_Bookings, on_delete=models.CASCADE,
-                                            related_name='wiut_bookings_details')
-    start_date = models.DateField(null=False, blank=False)
-    start_time = models.TimeField(null=False, blank=False)
-    end_date = models.DateField(null=False, blank=False)
-    end_time = models.TimeField(null=False, blank=False)
-
-    duration = models.DecimalField(null=True, blank=True, max_digits=3, decimal_places=2)
-    actual_start_time = models.DateTimeField(null=True, blank=True)
-    actual_end_time = models.DateTimeField(null=True, blank=True)
-
-    special_requests = models.CharField(null=False, blank=False, max_length=250, default='No Requests')
-    status = models.CharField(max_length=20, choices=[
-        ('Booked', 'Booked'),
-        ('In Progress', 'In Progress'),
-        ('Finished', 'Finished'),
-        ('Due Out', 'Due Out'),
-        ('Cancelled', 'Cancelled'),
-    ], default='Booked')
-
-    class Meta:
-        verbose_name = 'Wiut Bookings Detail'
-        verbose_name_plural = 'Wiut Bookings Details'
-
-    def __str__(self):
-        return f'Location Booking Details of {self.location_booking.booking_id}'
+        return f'Booking Details of {self.location_booking.booking_id}'

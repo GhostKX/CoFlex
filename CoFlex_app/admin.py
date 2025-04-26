@@ -8,12 +8,20 @@ from .models import (UnverifiedUsers, UnverifiedUsersVerificationCode,
                      DeletedAccountsMainInfo, DeletedAccountsProfile,
                      DeletedAccountsDetails, DeletedAccountsExtraDetails,
                      DeletedAccountsPhoto, DeletedAccountsSpecifics,
-                     SandSubscribedUsers, SandSubscribedUsersVerificationCode, SandSubscribedUsersDetails,
-                     SandSubscribedUsersPaymentDetails, SandSubscribedUserCardDetails,
-                     SandSubscribedUserCardDetailsLastFourDigits,
+
+                     SubscribedUsersVerificationCode,
+
                      SubscribedUsers, SubscribedUsersDetails,
                      SubscribedUsersPaymentDetails, SubscribedUserCardDetails,
-                     SubscribedUserCardDetailsLastFourDigits, SubscribedUsersSubscriptionHistory,
+                     SubscribedUserCardDetailsLastFourDigits, SubscribedUsersStopped,
+
+                     SubscribedUsersSubscriptionHistory, SubscribedUsersSubscriptionHistoryDetails,
+                     SubscribedUsersSubscriptionHistoryPaymentDetails, SubscribedUsersSubscriptionHistoryStopped,
+
+                     SubscribedUsersFuture, SubscribedUsersFutureDetails,
+                     SubscribedUsersFuturePaymentDetails, SubscribedUsersFutureCardDetails,
+                     SubscribedUsersFutureCardDetailsLastFourDigits, SubscribedUsersFutureStopped,
+
                      Locations, LocationDetails, LocationAvailability,
                      Booking, BookingDetails,
                      UserSignUpLoginLogoutActivity, UserDeviceActivities)
@@ -160,76 +168,122 @@ class UserAccountRecoveryCodeAdmin(admin.ModelAdmin):
     search_fields = ('user',)
 
 
-@admin.register(SandSubscribedUsers)
-class SandSubscribedUsersAdmin(admin.ModelAdmin):
-    list_display = ('user', 'subscription_datetime', 'subscription_expiry', 'is_subscribed', 'is_active')
-    search_fields = ('user_email',)
-
-
-@admin.register(SandSubscribedUsersVerificationCode)
-class SandSubscribedUsersVerificationCodeAdmin(admin.ModelAdmin):
+@admin.register(SubscribedUsersVerificationCode)
+class SubscribedUsersVerificationCodeAdmin(admin.ModelAdmin):
     list_display = ('user', 'verification_code', 'is_code_used', 'expires_at')
-    search_fields = ('user',)
-
-
-@admin.register(SandSubscribedUsersDetails)
-class SandSubscribedUserDetailsAdmin(admin.ModelAdmin):
-    list_display = ('user', 'type_of_subscription', 'duration')
-    search_fields = ('user_email', 'type_of_subscription', 'duration')
-
-
-@admin.register(SandSubscribedUsersPaymentDetails)
-class SandSubscribedUsersPaymentDetailsAdmin(admin.ModelAdmin):
-    list_display = ('user', 'charged_amount', 'charged_date', 'charged_time', 'is_charged', 'payment_method', 'payment_status')
-    search_fields = ('user__email',)
-
-
-@admin.register(SandSubscribedUserCardDetails)
-class SandSubscribedUserCardDetailsAdmin(admin.ModelAdmin):
-    list_display = ('user', 'card_number', 'expiry_date', 'cvv', 'card_holder_name', 'added_time')
-    search_fields = ('user__email',)
-
-
-@admin.register(SandSubscribedUserCardDetailsLastFourDigits)
-class SandSubscribedUserCardDetailsLastFourDigitsAdmin(admin.ModelAdmin):
-    list_display = ('user', 'last_four_digits', 'added_date', 'added_time')
-    search_fields = ('user__email',)
+    search_fields = ('user__user__email',)
 
 
 @admin.register(SubscribedUsers)
 class SubscribedUsersAdmin(admin.ModelAdmin):
-    list_display = ('user', 'subscription_datetime', 'subscription_expiry', 'is_subscribed', 'is_active')
-    search_fields = ('user_email',)
+    list_display = (
+        'user', 'subscription_unique_id', 'subscription_datetime', 'subscription_expiry_date', 'is_subscribed',
+        'is_active')
+    search_fields = ('user__email',)
 
 
 @admin.register(SubscribedUsersDetails)
-class SubscribedUserDetailsAdmin(admin.ModelAdmin):
-    list_display = ('user', 'type_of_subscription', 'duration')
-    search_fields = ('user_email', 'type_of_subscription', 'duration')
+class SubscribedUsersDetailsAdmin(admin.ModelAdmin):
+    list_display = ('subscribed_user', 'subscription_type', 'subscription_plan', 'subscription_duration', 'days_left',
+                    'subscription_from_date', 'subscription_till_date', 'subscription_status')
+    search_fields = ('subscribed_user__user__email', 'subscription_type', 'subscription_plan', 'subscription_duration')
 
 
 @admin.register(SubscribedUsersPaymentDetails)
 class SubscribedUsersPaymentDetailsAdmin(admin.ModelAdmin):
-    list_display = ('user', 'charged_amount', 'charged_date', 'charged_time', 'is_charged', 'payment_method', 'payment_status')
-    search_fields = ('user__email',)
+    list_display = ('subscribed_user', 'charged_amount', 'charged_date', 'charged_time', 'is_charged', 'payment_method',
+                    'payment_status')
+    search_fields = ('subscribed_user__user__email',)
 
 
 @admin.register(SubscribedUserCardDetails)
 class SubscribedUserCardDetailsAdmin(admin.ModelAdmin):
-    list_display = ('user', 'card_number', 'expiry_date', 'cvv', 'card_holder_name', 'added_time')
-    search_fields = ('user__email',)
+    list_display = ('subscribed_user', 'card_number', 'expiry_date', 'cvv', 'card_holder_name', 'added_time')
+    search_fields = ('subscribed_user__user__email',)
 
 
 @admin.register(SubscribedUserCardDetailsLastFourDigits)
 class SubscribedUserCardDetailsLastFourDigitsAdmin(admin.ModelAdmin):
-    list_display = ('user', 'last_four_digits', 'added_date', 'added_time')
-    search_fields = ('user__email',)
+    list_display = ('subscribed_user', 'last_four_digits', 'added_date', 'added_time')
+    search_fields = ('subscribed_user__user__email',)
+
+
+@admin.register(SubscribedUsersStopped)
+class SubscribedUsersStoppedAdmin(admin.ModelAdmin):
+    list_display = ('subscribed_user', 'stopped_duration', 'subscription_stopped_days_left',
+                    'remaining_stop_attempts', 'subscription_stopped_at', 'subscription_resumed_at')
+    search_fields = ('subscribed_user__user__email', 'subscription_stopped_days_left')
 
 
 @admin.register(SubscribedUsersSubscriptionHistory)
 class SubscribedUsersSubscriptionHistoryAdmin(admin.ModelAdmin):
-    list_display = ('user', 'start_date', 'end_date', 'subscription_type', 'subscription_status')
+    list_display = ('user', 'subscription_unique_id', 'subscription_datetime',
+                    'subscription_expiry_date', 'is_subscribed', 'is_active')
     search_fields = ('user__email',)
+
+
+@admin.register(SubscribedUsersSubscriptionHistoryDetails)
+class SubscribedUsersSubscriptionHistoryDetailsAdmin(admin.ModelAdmin):
+    list_display = ('subscribed_user_history', 'subscription_type', 'subscription_plan', 'subscription_duration',
+                    'days_left', 'subscription_from_date', 'subscription_till_date', 'subscription_status')
+    search_fields = ('subscribed_user_history__user__email', 'subscription_type',
+                     'subscription_plan', 'subscription_duration')
+
+
+@admin.register(SubscribedUsersSubscriptionHistoryPaymentDetails)
+class SubscribedUsersSubscriptionHistoryPaymentDetailsAdmin(admin.ModelAdmin):
+    list_display = (
+        'subscribed_user_history', 'charged_amount', 'charged_date', 'charged_time', 'is_charged', 'payment_method',
+        'payment_status')
+    search_fields = ('subscribed_user_history__user__email',)
+
+
+@admin.register(SubscribedUsersSubscriptionHistoryStopped)
+class SubscribedUsersSubscriptionHistoryStoppedAdmin(admin.ModelAdmin):
+    list_display = ('subscribed_user_history', 'stopped_duration', 'subscription_stopped_days_left',
+                    'remaining_stop_attempts', 'subscription_stopped_at', 'subscription_resumed_at')
+    search_fields = ('subscribed_user_history__user__email', 'subscription_stopped_days_left')
+
+
+@admin.register(SubscribedUsersFuture)
+class SubscribedUsersFutureAdmin(admin.ModelAdmin):
+    list_display = (
+        'user', 'subscription_unique_id', 'subscription_datetime', 'subscription_expiry_date', 'is_subscribed',
+        'is_active')
+    search_fields = ('user__email',)
+
+
+@admin.register(SubscribedUsersFutureDetails)
+class SubscribedUsersFutureDetailsAdmin(admin.ModelAdmin):
+    list_display = ('subscribed_user_future', 'subscription_type', 'subscription_plan', 'subscription_duration', 'days_left',
+                    'subscription_from_date', 'subscription_till_date', 'subscription_status')
+    search_fields = ('subscribed_user_future__user__email', 'subscription_type', 'subscription_plan', 'subscription_duration')
+
+
+@admin.register(SubscribedUsersFuturePaymentDetails)
+class SubscribedUsersFuturePaymentDetailsAdmin(admin.ModelAdmin):
+    list_display = ('subscribed_user_future', 'charged_amount', 'charged_date', 'charged_time', 'is_charged', 'payment_method',
+                    'payment_status')
+    search_fields = ('subscribed_user_future__user__email',)
+
+
+@admin.register(SubscribedUsersFutureCardDetails)
+class SubscribedUsersFutureCardDetailsAdmin(admin.ModelAdmin):
+    list_display = ('subscribed_user_future', 'card_number', 'expiry_date', 'cvv', 'card_holder_name', 'added_time')
+    search_fields = ('subscribed_user_future__user__email',)
+
+
+@admin.register(SubscribedUsersFutureCardDetailsLastFourDigits)
+class SubscribedUserCardDetailsLastFourDigitsAdmin(admin.ModelAdmin):
+    list_display = ('subscribed_user_future', 'last_four_digits', 'added_date', 'added_time')
+    search_fields = ('subscribed_user_future__user__email',)
+
+
+@admin.register(SubscribedUsersFutureStopped)
+class SubscribedUsersStoppedAdmin(admin.ModelAdmin):
+    list_display = ('subscribed_user_future', 'stopped_duration', 'subscription_stopped_days_left',
+                    'remaining_stop_attempts', 'subscription_stopped_at', 'subscription_resumed_at')
+    search_fields = ('subscribed_user_future__user__email', 'subscription_stopped_days_left')
 
 
 @admin.register(Locations)
@@ -240,7 +294,8 @@ class LocationAdmin(admin.ModelAdmin):
 
 @admin.register(LocationDetails)
 class LocationDetailsAdmin(admin.ModelAdmin):
-    list_display = ('location', 'address', 'contact_phone', 'working_hours', 'image_path', 'website', 'default_availability')
+    list_display = (
+        'location', 'address', 'contact_phone', 'working_hours', 'image_path', 'website', 'default_availability')
     search_fields = ('location', 'address', 'contact_phone', 'website')
 
 
@@ -264,7 +319,10 @@ class BookingDetailsAdmin(admin.ModelAdmin):
 
 @admin.register(UserSignUpLoginLogoutActivity)
 class UserSignUpLoginLogoutActivityAdmin(admin.ModelAdmin):
-    list_display = ('user', 'session_key', 'ip_address', 'device_type', 'browser', 'operating_system', 'city', 'country', 'date_time', 'is_Logged_in', 'action')
+    list_display = (
+        'user', 'session_key', 'ip_address', 'device_type', 'browser', 'operating_system', 'city', 'country',
+        'date_time',
+        'is_Logged_in', 'action')
     search_fields = ('user__email', 'session_key', 'ip_address', 'browser', 'city', 'country')
     list_filter = ('action', 'is_Logged_in', 'date_time', 'country')
     ordering = ('-date_time',)
@@ -290,5 +348,3 @@ class UserDeviceActivitiesAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             queryset = queryset.exclude(user_session__user=request.user)  # Exclude the superuser's data
         return queryset
-
-

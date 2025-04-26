@@ -2,26 +2,25 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.utils import timezone
 from django.utils.timezone import now
+from django.http import JsonResponse
 from datetime import timedelta
 import random
-from django.core.mail import send_mail
-from django.utils.html import escape
-from ..models import (VerifiedUsers,
+import uuid
+from ..models import (VerifiedUsers, SubscribedUsersVerificationCode,
 
-                      SandSubscribedUsers, SandSubscribedUsersVerificationCode,
-                      SandSubscribedUsersDetails, SandSubscribedUsersPaymentDetails,
-                      SandSubscribedUserCardDetails, SandSubscribedUserCardDetailsLastFourDigits,
+                      SubscribedUsers, SubscribedUsersDetails,
+                      SubscribedUsersPaymentDetails, SubscribedUserCardDetails,
+                      SubscribedUserCardDetailsLastFourDigits, SubscribedUsersStopped,
 
-                      SubscribedUsers,
-                      SubscribedUsersDetails, SubscribedUsersPaymentDetails,
-                      SubscribedUserCardDetails, SubscribedUserCardDetailsLastFourDigits,
-                      SubscribedUsersSubscriptionHistory)
+                      SubscribedUsersSubscriptionHistory, SubscribedUsersFuture)
 
-from ..forms.user_card_details_forms import VerifiedUserCardDetailsForms, SubscribedUsersVerificationCodeForms
+from ..forms.user_card_details_forms import VerifiedUserCardDetails_SubscribedUsersVerificationCode_Forms
 from django.conf import settings
 from cryptography.fernet import Fernet
 from .user_recent_actions_views import user_device_activity
+from .email_functions import send_verification_code_email, send_subscription_confirmation_email
 
 
 @login_required
@@ -34,40 +33,82 @@ def user_home(request, user_id):
         "is_subscribed": False,
     }
 
+    subscription_plans = {
+        "basic_month": ["Hot Desk Access", "Basic Wi-Fi"],
+        "standard_month": ["Dedicated Desk", "Premium Wi-Fi", "10 Meeting Room Hours"],
+        "vip_month": ["Private Office", "Premium Wi-Fi", "20 Meeting Room Hours", "Dedicated Support"],
+
+        "basic_quarter": ["Hot Desk Access", "Enhanced Wi-Fi", "5 Meeting Room Hours"],
+        "standard_quarter": ["Dedicated Desk", "Ultra-Fast Wi-Fi", "20 Meeting Room Hours", "Priority Support"],
+        "vip_quarter": ["Large Private Office", "Ultra-Fast Wi-Fi", "Unlimited Meeting Rooms", "Executive Support"],
+
+        "basic_semiannual": ["Hot Desk Access", "Premium Wi-Fi", "15 Meeting Room Hours", "Basic Support"],
+        "standard_semiannual": ["Dedicated Desk", "Ultra-Fast Wi-Fi", "Unlimited Meeting Rooms", "Premium Support"],
+        "vip_semiannual": ["Executive Private Suite", "Premium Networking", "Event Access", "24/7 Concierge"]
+    }
+
     try:
-        subscribed_user = SubscribedUsers.objects.get(user=user, is_subscribed=True, is_active=True)
-        subscription_details = SubscribedUsersDetails.objects.get(user=subscribed_user)
-        payment_details = SubscribedUsersPaymentDetails.objects.filter(user=subscribed_user).last()
-        card_details = SubscribedUserCardDetailsLastFourDigits.objects.filter(user=subscribed_user).last()
+        subscribed_user = SubscribedUsers.objects.get(user=user, is_subscribed=True)
+        subscription_details = SubscribedUsersDetails.objects.get(subscribed_user=subscribed_user)
+        payment_details = SubscribedUsersPaymentDetails.objects.get(subscribed_user=subscribed_user)
+        card_details = SubscribedUserCardDetailsLastFourDigits.objects.get(subscribed_user=subscribed_user)
 
         # Subscription Information
-        type_of_subscription = (subscription_details.type_of_subscription.replace('_', ' ')).title()
-        expiry_date = subscribed_user.subscription_expiry
-        days_left = (expiry_date.date() - now().date()).days if expiry_date else None
-        is_expiring_soon = days_left is not None and days_left <= 7
+        subscription_type = subscription_details.subscription_type
+        subscription_plan = subscription_details.subscription_plan
+        subscription_text = subscription_plans[subscription_plan]
+
+        if subscription_details.subscription_status == 'stopped':
+            duration = subscribed_user.subscribed_users_stopped.stopped_duration
+            from_date = subscribed_user.subscribed_users_stopped.subscription_stopped_from_date
+            till_date = subscribed_user.subscribed_users_stopped.subscription_stopped_till_date
+            subscription_expiry_date = subscribed_user.subscribed_users_stopped.subscription_stopped_till_date
+            days_left = subscribed_user.subscribed_users_stopped.subscription_stopped_days_left
+            remaining_stop_attempts = subscribed_user.subscribed_users_stopped.remaining_stop_attempts
+            is_expiring_soon = days_left is not None and days_left <= 3
+        else:
+            duration = subscription_details.subscription_duration
+            from_date = subscription_details.subscription_from_date
+            till_date = subscription_details.subscription_till_date
+            subscription_expiry_date = subscribed_user.subscription_expiry_date
+            days_left = subscription_details.days_left
+            remaining_stop_attempts = subscribed_user.subscribed_users_stopped.remaining_stop_attempts
+            is_expiring_soon = days_left is not None and days_left <= 7
 
         # Payment Information
         last_payment_amount = payment_details.charged_amount if payment_details else None
         last_payment_date = payment_details.charged_date if payment_details else None
         payment_method = payment_details.payment_method if payment_details else None
-        payment_method = (payment_method.replace('_', ' ')).title()
+        payment_method = payment_method.replace("_", " ").title()
+        subscription_plan = subscription_plan.replace("_", " ").title()
         payment_status = payment_details.payment_status if payment_details else "pending"
 
         # Masked Card Details
         last_four_digits = card_details.last_four_digits if card_details else "****"
-        f_last_four_digits = Fernet(settings.FERNET_KEY_LAST_FOUR_DIGITS)
-        last_four_digits = (f_last_four_digits.decrypt(last_four_digits.encode())).decode()
+        f1_last_four_digits = Fernet(settings.FIRST_FERNET_KEY_LAST_FOUR_DIGITS)
+        f2_last_four_digits = Fernet(settings.SECOND_FERNET_KEY_LAST_FOUR_DIGITS)
 
-        progress_width = (days_left / subscription_details.duration) * 100 if subscription_details.duration and subscription_details.duration > 0 else 0
+        last_four_digits = f2_last_four_digits.decrypt(f1_last_four_digits.decrypt(last_four_digits.encode())).decode()
+
+        progress_width = (days_left / duration) * 100 if duration and duration > 0 else 0
 
         # Context Update
         context.update({
             "is_subscribed": True,
-            "subscription_type": type_of_subscription,
-            "subscription_expiry": expiry_date,
-            "duration": subscription_details.duration,
+
+            "subscription_type": subscription_type.capitalize(),
+            "subscription_plan": subscription_plan,
+            "subscription_text": subscription_text,
+            "subscription_expiry": subscription_expiry_date,
+            "duration": duration,
+            "subscription_from_date": from_date,
+            "subscription_till_date": till_date,
             "days_left": days_left,
             "is_expiring_soon": is_expiring_soon,
+            "subscription_status": subscription_details.subscription_status,
+
+            "remaining_stop_attempts": remaining_stop_attempts,
+
             "last_payment_amount": last_payment_amount,
             "last_payment_date": last_payment_date,
             "payment_method": payment_method,
@@ -83,64 +124,83 @@ def user_home(request, user_id):
 
 
 @login_required
-def user_card_details(request, user_id, subscription_type):
+def user_card_details_verification_code_validation(request, user_id, subscription_plan):
     user = get_object_or_404(VerifiedUsers, id=user_id)
+
+    subscription_plans = {
+        "basic_month": {"price": 50, "days": 30, 'subscription_type': 'monthly'},
+        "standard_month": {"price": 100, "days": 30, 'subscription_type': 'monthly'},
+        "vip_month": {"price": 200, "days": 30, 'subscription_type': 'monthly'},
+        "basic_quarter": {"price": 135, "days": 90, 'subscription_type': 'quarterly'},
+        "standard_quarter": {"price": 270, "days": 90, 'subscription_type': 'quarterly'},
+        "vip_quarter": {"price": 540, "days": 90, 'subscription_type': 'quarterly'},
+        "basic_semiannual": {"price": 250, "days": 180, 'subscription_type': 'semiannually'},
+        "standard_semiannual": {"price": 500, "days": 180, 'subscription_type': 'semiannually'},
+        "vip_semiannual": {"price": 1000, "days": 180, 'subscription_type': 'semiannually'},
+    }
+    subscription_plan_type = subscription_plan.replace("_", " ").title()
+    amount_to_charge = subscription_plans[subscription_plan]['price']
+
     if request.method == 'POST':
-        form = VerifiedUserCardDetailsForms(request.POST, user=user)
+        form = VerifiedUserCardDetails_SubscribedUsersVerificationCode_Forms(request.POST, user=user)
+        print(form.is_valid())
+        print(f'Form errors: {form.errors}')
         if form.is_valid():
-            subscription_plans = {
-                "basic_month": {"price": 50, "days": 30},
-                "standard_month": {"price": 100, "days": 30},
-                "vip_month": {"price": 200, "days": 30},
-                "basic_quarter": {"price": 135, "days": 90},
-                "standard_quarter": {"price": 270, "days": 90},
-                "vip_quarter": {"price": 540, "days": 90},
-                "basic_semiannual": {"price": 250, "days": 180},
-                "standard_semiannual": {"price": 500, "days": 180},
-                "vip_semiannual": {"price": 1000, "days": 180},
-            }
 
-            if subscription_type not in subscription_plans:
+            if subscription_plan not in subscription_plans:
                 messages.error(request, 'Invalid subscription type. Please try again!')
-                return redirect('user_card_details', user_id=user.id, subscription_type=subscription_type)
+                return redirect('user_home', user_id=user.id)
 
-            amount_to_charge = subscription_plans[subscription_type]["price"]
-            duration_days = subscription_plans[subscription_type]["days"]
+            verification_entry = SubscribedUsersVerificationCode.objects.get(user=user)
+            verification_entry.is_code_used = True
+            verification_entry.verification_code = None
+            verification_entry.save()
 
-            user.is_subscribed = True
-            user.save()
+            amount_to_charge = subscription_plans[subscription_plan]["price"]
+            subscription_duration = subscription_plans[subscription_plan]["days"]
+            subscription_type = subscription_plans[subscription_plan]["subscription_type"]
 
-            sand_subscribed_user, created = SandSubscribedUsers.objects.get_or_create(user=user)
-            sand_subscribed_user.subscription_datetime = now()
-            sand_subscribed_user.subscription_expiry = now() + timedelta(days=duration_days)
-            sand_subscribed_user.is_subscribed = False
-            sand_subscribed_user.is_active = True
-            sand_subscribed_user.save()
+            def generate_subscription_unique_id():
+                while True:
+                    subscription_unique_id = uuid.uuid4().hex  # 32-character UUID
+                    exists = (
+                            SubscribedUsers.objects.filter(subscription_unique_id=subscription_unique_id).exists() or
+                            SubscribedUsersSubscriptionHistory.objects.filter(
+                                subscription_unique_id=subscription_unique_id).exists() or
+                            SubscribedUsersFuture.objects.filter(subscription_unique_id=subscription_unique_id).exists()
+                    )
+                    if not exists:
+                        return subscription_unique_id
 
-            sand_subscribed_user_details, details_created = SandSubscribedUsersDetails.objects.get_or_create(
-                user=sand_subscribed_user)
-            sand_subscribed_user_payment_details, payment_created = SandSubscribedUsersPaymentDetails.objects.get_or_create(
-                user=sand_subscribed_user)
-            sand_subscribed_user_card_details, card_created = SandSubscribedUserCardDetails.objects.get_or_create(
-                user=sand_subscribed_user)
-            sand_subscribed_users_card_details_last_four_digits, last_four_digits_created = SandSubscribedUserCardDetailsLastFourDigits.objects.get_or_create(
-                user=sand_subscribed_user
+            subscribed_user = SubscribedUsers.objects.create(
+                user=user,
+                subscription_unique_id=generate_subscription_unique_id(),
+                subscription_datetime=timezone.now(),
+                subscription_expiry_date=timezone.now().date() + timedelta(days=subscription_duration),
+                is_subscribed=True,
+                is_active=True
             )
 
-            sand_subscribed_user_details.type_of_subscription = subscription_type
-            sand_subscribed_user_details.duration = duration_days
-            sand_subscribed_user_details.save()
+            subscribed_user_details = SubscribedUsersDetails.objects.create(
+                subscribed_user=subscribed_user,
+                subscription_type=subscription_type,
+                subscription_plan=subscription_plan,
+                subscription_duration=subscription_duration,
+                days_left=subscription_duration,
+                subscription_from_date=timezone.now().date(),
+                subscription_till_date=timezone.now().date() + timedelta(days=subscription_duration),
+                subscription_status='active'
+            )
 
-            sand_subscribed_user_payment_details.charged_amount = amount_to_charge
-            sand_subscribed_user_payment_details.charged_date = now().date()
-            sand_subscribed_user_payment_details.charged_time = now().time()
-            sand_subscribed_user_payment_details.is_charged = False
-            sand_subscribed_user_payment_details.payment_method = 'credit_card'
-            sand_subscribed_user_payment_details.payment_status = 'completed'
-            sand_subscribed_user_payment_details.save()
-
-            f_first = Fernet(settings.SAND_FIRST_FERNET_KEY)
-            f_second = Fernet(settings.SAND_SECOND_FERNET_KEY)
+            subscribed_user_payment_details = SubscribedUsersPaymentDetails.objects.create(
+                subscribed_user=subscribed_user,
+                charged_amount=amount_to_charge,
+                charged_date=timezone.now().date(),
+                charged_time=timezone.now().time(),
+                is_charged=True,
+                payment_method='credit_card',
+                payment_status='successful'
+            )
 
             card_number = form.cleaned_data.get('card_number')
             last_four_digits = card_number[-4:]
@@ -148,209 +208,114 @@ def user_card_details(request, user_id, subscription_type):
             cvv = form.cleaned_data.get('cvv')
             card_holder_name = form.cleaned_data.get('card_holder_name')
 
-            sand_subscribed_user_card_details.card_number = (f_second.encrypt(f_first.encrypt(card_number.encode()))).decode()
-            sand_subscribed_user_card_details.expiry_date = (f_second.encrypt(f_first.encrypt(expiry_date.encode()))).decode()
-            sand_subscribed_user_card_details.cvv = (f_second.encrypt(f_first.encrypt(cvv.encode()))).decode()
-            sand_subscribed_user_card_details.card_holder_name = (f_second.encrypt(f_first.encrypt(card_holder_name.encode()))).decode()
-            sand_subscribed_user_card_details.added_time = now()
-            sand_subscribed_user_card_details.save()
+            f1 = Fernet(settings.FIRST_FERNET_KEY)
+            f2 = Fernet(settings.SECOND_FERNET_KEY)
+            f3 = Fernet(settings.THIRD_FERNET_KEY)
+            f4 = Fernet(settings.FOURTH_FERNET_KEY)
+            f5 = Fernet(settings.FIFTH_FERNET_KEY)
 
-            f_last_four_digits = Fernet(settings.SAND_FERNET_KEY_LAST_FOUR_DIGITS)
-            last_four_digits = (f_last_four_digits.encrypt(last_four_digits.encode())).decode()
+            subscribed_user_card_details = SubscribedUserCardDetails.objects.create(
+                subscribed_user=subscribed_user,
+                card_number=(f1.encrypt(f2.encrypt(f3.encrypt(f4.encrypt(f5.encrypt(card_number.encode())))))).decode(),
+                expiry_date=(f1.encrypt(f2.encrypt(f3.encrypt(f4.encrypt(f5.encrypt(expiry_date.encode())))))).decode(),
+                cvv=(f1.encrypt(f2.encrypt(f3.encrypt(f4.encrypt(f5.encrypt(cvv.encode())))))).decode(),
+                card_holder_name=(
+                    f1.encrypt(f2.encrypt(f3.encrypt(f4.encrypt(f5.encrypt(card_holder_name.encode())))))).decode(),
+                added_time=timezone.now()
+            )
 
-            sand_subscribed_users_card_details_last_four_digits.last_four_digits = last_four_digits
-            sand_subscribed_users_card_details_last_four_digits.added_date = now().date()
-            sand_subscribed_users_card_details_last_four_digits.added_time = now().time()
-            sand_subscribed_users_card_details_last_four_digits.save()
+            f1_last_four_digits = Fernet(settings.FIRST_FERNET_KEY_LAST_FOUR_DIGITS)
+            f2_last_four_digits = Fernet(settings.SECOND_FERNET_KEY_LAST_FOUR_DIGITS)
 
-            verification_code = str(random.randint(100000, 999999))
+            subscribed_users_card_details_last_four_digits = SubscribedUserCardDetailsLastFourDigits.objects.create(
+                subscribed_user=subscribed_user,
+                last_four_digits=(
+                    f1_last_four_digits.encrypt(f2_last_four_digits.encrypt(last_four_digits.encode()))).decode(),
+                added_date=timezone.now().date(),
+                added_time=timezone.now().time(),
+            )
 
-            try:
-                send_mail('Verification Code',
-                          f'<p>Message to {escape(user.email)}',
-                          'settings.EMAIL_HOST_USER',
-                          [user.email],
-                          fail_silently=False,
-                          html_message=f'<html><body style="font-size: 18px; font-family: Arial, sans-serif;">'
-                                       f'<p>{escape(user.first_name)} {escape(user.last_name)},'
-                                       f' your verification code is: <b style="font-size: 24px; font-weight: bold;">{verification_code}</b>'
-                                       f'</p>'
-                                       f'<p>This code will expire in a minute!</p>'
-                                       f'</body></html>')
-                messages.success(request, 'A verification code has been sent to your email!')
+            if subscribed_user.subscribed_users_details.subscription_type == 'monthly':
+                remaining_stop_attempts = 3
+            elif subscribed_user.subscribed_users_details.subscription_type == 'quarterly':
+                remaining_stop_attempts = 4
+            else:
+                remaining_stop_attempts = 5
 
-                f_code = Fernet(settings.FERNET_KEY_VERIFICATION_CODE)
-                verification_code = (f_code.encrypt(str(verification_code).encode())).decode()
+            subscribed_users_stopped = SubscribedUsersStopped.objects.create(
+                subscribed_user=subscribed_user,
+                stopped_duration=subscribed_user.subscribed_users_details.subscription_duration / 10,
+                subscription_stopped_days_left=subscribed_user.subscribed_users_details.subscription_duration / 10,
+                remaining_stop_attempts=remaining_stop_attempts
+            )
 
-                SandSubscribedUsersVerificationCode.objects.get_or_create(
-                    user=sand_subscribed_user,
-                    verification_code=verification_code,
-                    is_code_used=False,
-                    expires_at=now() + timedelta(minutes=1)
-                )
-                return redirect('user_card_details_verification_code', user_id=user.id)
-            except Exception as e:
-                messages.error(request, f'Error sending verification email: {e}')
-                return redirect(f'user_home', user_id=user.id)
+            user_device_activity(instance=user, request=request, activity_type='Purchased Subscription',
+                                 activity_details={})
+
+            send_subscription_confirmation_email(user=user,
+                                                 sender_email=settings.EMAIL_HOST_USER,
+                                                 recipient_email=user.email,
+                                                 subscription=subscribed_user,
+                                                 subscription_details=subscribed_user.subscribed_users_details,
+                                                 payment_details=subscribed_user.subscribed_users_payment_details,
+                                                 card_details_last_four=subscribed_user.subscribed_users_card_details_last_four_digits)
+
+            messages.success(request, 'Your payment has been verified successfully!')
+
+            return redirect('user_home', user_id=user.id)
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{form.fields[field].label}: {error}")
 
     else:
-        form = VerifiedUserCardDetailsForms(user=user)
+        form = VerifiedUserCardDetails_SubscribedUsersVerificationCode_Forms(user=user)
 
-    return render(request, 'user_card_details/user_card_details.html', {'form': form, 'user': user})
+    return render(request, 'user_card_details/user_card_details_verification_code_validation.html', {'form': form,
+                                                                                                     'user': user,
+                                                                                                     'subscription_plan_type': subscription_plan_type,
+                                                                                                     'amount_to_charge': amount_to_charge,
+                                                                                                     'subscription_plan': subscription_plan})
+
+
+@login_required
+def user_card_details_sending_verification_code(request, user_id):
+    if request.method != "POST":
+        return JsonResponse({'error': 'Invalid request method.'}, status=400)
+    user = get_object_or_404(VerifiedUsers, id=user_id)
+
+    verification_code = str(random.randint(100000, 999999))
+
+    try:
+        send_verification_code_email(user=user,
+                                     sender_email=settings.EMAIL_HOST_USER,
+                                     recipient_email=user.email,
+                                     verification_code=verification_code,
+                                     expiry_time='a minute')
+
+        f_code = Fernet(settings.FERNET_KEY_VERIFICATION_CODE)
+        verification_code = (f_code.encrypt(str(verification_code).encode())).decode()
+
+        SubscribedUsersVerificationCode.objects.update_or_create(
+            user=user,
+            defaults={
+                'verification_code': verification_code,
+                'is_code_used': False,
+                'expires_at': now() + timedelta(minutes=1)
+            }
+        )
+
+        # messages.success(request, 'A verification code has been sent to your email!')
+
+        return JsonResponse({'message': 'Verification code sent successfully.'}, status=200)
+
+    except Exception as e:
+        messages.error(request, f'Error sending verification email: {e}')
+        return JsonResponse({'error': f'Error sending verification email: {str(e)}'}, status=500)
 
 
 @login_required
 def user_card_cancel_verification(request, user_id):
     user = get_object_or_404(VerifiedUsers, id=user_id)
-    sand_subscribed_user = get_object_or_404(SandSubscribedUsers, user=user)
-    sand_subscribed_user.delete()
-    messages.info(request, "Your subscription process has been canceled. Please start again.")
-    return redirect('user_home', user_id=user_id)
-
-
-@login_required
-def user_card_details_verification_code(request, user_id):
-    user = get_object_or_404(VerifiedUsers, id=user_id)
-    sand_subscribed_user = get_object_or_404(SandSubscribedUsers, user=user)
-
-    if request.method == 'POST':
-        form = SubscribedUsersVerificationCodeForms(request.POST, user=sand_subscribed_user)
-
-        if form.is_valid():
-            verification_entry = SandSubscribedUsersVerificationCode.objects.get(user=sand_subscribed_user)
-            verification_entry.is_code_used = True
-            verification_entry.verification_code = None
-            verification_entry.save()
-
-            sand_subscribed_user.is_subscribed = True
-            sand_subscribed_user.save()
-
-            sand_subscribed_user.sand_subscribed_users_payment_details.is_charged = True
-            sand_subscribed_user.sand_subscribed_users_payment_details.save()
-
-            subscribed_user, created_at = SubscribedUsers.objects.get_or_create(
-                user=user,
-                subscription_datetime=sand_subscribed_user.subscription_datetime,
-                subscription_expiry=sand_subscribed_user.subscription_expiry,
-                is_subscribed=sand_subscribed_user.is_subscribed,
-                is_active=sand_subscribed_user.is_active
-            )
-
-            SubscribedUsersDetails.objects.get_or_create(
-                user=subscribed_user,
-                type_of_subscription=sand_subscribed_user.sand_subscribed_users_details.type_of_subscription,
-                duration=sand_subscribed_user.sand_subscribed_users_details.duration,
-            )
-
-            SubscribedUsersPaymentDetails.objects.get_or_create(
-                user=subscribed_user,
-                charged_amount=sand_subscribed_user.sand_subscribed_users_payment_details.charged_amount,
-                charged_date=sand_subscribed_user.sand_subscribed_users_payment_details.charged_date,
-                charged_time=sand_subscribed_user.sand_subscribed_users_payment_details.charged_time,
-                is_charged=sand_subscribed_user.sand_subscribed_users_payment_details.is_charged,
-                payment_method=sand_subscribed_user.sand_subscribed_users_payment_details.payment_method,
-                payment_status=sand_subscribed_user.sand_subscribed_users_payment_details.payment_status
-            )
-
-            f1 = Fernet(settings.FIRST_FERNET_KEY)
-            f2 = Fernet(settings.SECOND_FERNET_KEY)
-            f3 = Fernet(settings.THIRD_FERNET_KEY)
-
-            f_first = Fernet(settings.SAND_FIRST_FERNET_KEY)
-            f_second = Fernet(settings.SAND_SECOND_FERNET_KEY)
-
-            card_number = (f3.encrypt(f2.encrypt(f1.encrypt(f_first.decrypt(f_second.decrypt(sand_subscribed_user.sand_subscribed_users_card_details.card_number.encode())))))).decode()
-            expiry_date = (f3.encrypt(f2.encrypt(f1.encrypt(f_first.decrypt(f_second.decrypt(sand_subscribed_user.sand_subscribed_users_card_details.expiry_date.encode())))))).decode()
-            cvv = (f3.encrypt(f2.encrypt(f1.encrypt(f_first.decrypt(f_second.decrypt(sand_subscribed_user.sand_subscribed_users_card_details.cvv.encode())))))).decode()
-            card_holder_name = (f3.encrypt(f2.encrypt(f1.encrypt(f_first.decrypt(f_second.decrypt(sand_subscribed_user.sand_subscribed_users_card_details.card_holder_name.encode())))))).decode()
-
-            SubscribedUserCardDetails.objects.get_or_create(
-                user=subscribed_user,
-                card_number=card_number,
-                expiry_date=expiry_date,
-                cvv=cvv,
-                card_holder_name=card_holder_name,
-                added_time=sand_subscribed_user.sand_subscribed_users_card_details.added_time
-            )
-
-            f_sand_code = Fernet(settings.SAND_FERNET_KEY_LAST_FOUR_DIGITS)
-            f_code = Fernet(settings.FERNET_KEY_LAST_FOUR_DIGITS)
-            last_four_digits=(f_code.encrypt(f_sand_code.decrypt(sand_subscribed_user.sand_subscribed_users_card_details_last_four_digits.last_four_digits.encode()))).decode()
-
-            SubscribedUserCardDetailsLastFourDigits.objects.get_or_create(
-                user=subscribed_user,
-                last_four_digits=last_four_digits,
-                added_date=sand_subscribed_user.sand_subscribed_users_card_details_last_four_digits.added_date,
-                added_time=sand_subscribed_user.sand_subscribed_users_card_details_last_four_digits.added_time,
-            )
-
-            SubscribedUsersSubscriptionHistory.objects.get_or_create(
-                user=subscribed_user,
-                start_date=now().date(),
-                end_date=now().date() + timedelta(days=sand_subscribed_user.sand_subscribed_users_details.duration),
-                subscription_type=sand_subscribed_user.sand_subscribed_users_details.type_of_subscription,
-                subscription_status='subscribed'
-            )
-
-            sand_subscribed_user.delete()
-
-            user_device_activity(instance=user, request=request, activity_type='Purchased Subscription', activity_details={})
-
-            messages.success(request, 'Your payment has been verified successfully!')
-
-            return redirect('user_home', user_id=user.id)
-    else:
-        form = SubscribedUsersVerificationCodeForms(user=sand_subscribed_user)
-
-    return render(request, 'user_card_details/user_card_details_verification_code.html', {'form': form,
-                                                                                          'user': user,
-                                                                                          'subscribed_user': sand_subscribed_user,
-                                                                                          'subscribed_users_details': sand_subscribed_user.sand_subscribed_users_details})
-
-
-@login_required
-def user_card_details_verification_code_resend_code(request, user_id):
-    user = get_object_or_404(VerifiedUsers, id=user_id)
-    sand_subscribed_user = get_object_or_404(SandSubscribedUsers, user=user)
-
-    verification_code = str(random.randint(100000, 999999))
-
-    try:
-        send_mail('Verification Code',
-                  f'<p>Message to {escape(user.email)}',
-                  'settings.EMAIL_HOST_USER',
-                  [user.email],
-                  fail_silently=False,
-                  html_message=f'<html><body style="font-size: 18px; font-family: Arial, sans-serif;">'
-                               f'<p>{escape(user.first_name)} {escape(user.last_name)},'
-                               f' your verification code is: <b style="font-size: 24px; font-weight: bold;">{verification_code}</b>'
-                               f'</p>'
-                               f'<p>This code will expire in a minute!</p>'
-                               f'</body></html>')
-
-        f_code = Fernet(settings.FERNET_KEY_VERIFICATION_CODE)
-        verification_code = (f_code.encrypt(str(verification_code).encode())).decode()
-
-        verification_entry = SandSubscribedUsersVerificationCode.objects.filter(user=sand_subscribed_user).first()
-
-        if verification_entry:
-            verification_entry.verification_code = verification_code
-            verification_entry.expires_at = now() + timedelta(minutes=1)
-            verification_entry.is_code_used = False
-            verification_entry.save()
-        else:
-            SandSubscribedUsersVerificationCode.objects.create(
-                user=sand_subscribed_user,
-                verification_code=verification_code,
-                is_code_used=False,
-                expires_at=now() + timedelta(minutes=1)
-            )
-
-        messages.success(request, 'A verification code has been sent to your email!')
-
-    except Exception as e:
-        messages.error(request, f'Error sending verification email: {e}')
-
-    return redirect('user_card_details_verification_code', user_id=user.id)
-
-
+    messages.info(request, "Your subscription process has been canceled!")
+    return redirect('user_home', user_id=user.id)

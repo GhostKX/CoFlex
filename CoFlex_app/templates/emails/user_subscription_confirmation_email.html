@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Confirmation - CoFlex</title>
+    <style>
+        /* All styles are inlined for all types of emails */
+    </style>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Inter', Arial, sans-serif; background-color: #f9fafb; color: #111827; line-height: 1.5;">
+    <!-- Wrapper with background color -->
+    <div style="background-color: #f9fafb; padding: 40px 20px;">
+        <!-- Main container -->
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);">
+            <!-- Brand Header -->
+            <div style="padding: 28px 0; text-align: center; border-bottom: 1px solid #f3f4f6;">
+                <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
+                    <tr>
+                        <td style="text-align: center;">
+                            <!-- SVG icon instead of material icon -->
+                            <a href="#"><img src="https://i.ibb.co/VYYwSTCD/logo.png" alt="CoFlex" width="48" height="48" style="vertical-align: middle; margin-right: 8px;"></a>
+                            <span style="font-size: 24px; font-weight: 700; color: #2563eb; vertical-align: middle;">CoFlex</span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Email Content -->
+            <div style="padding: 40px 48px;">
+                <div style="text-align: center; margin-bottom: 32px;">
+                    <h1 style="font-size: 24px; font-weight: 600; margin: 0 0 12px 0; color: #111827;">Subscription Confirmed!</h1>
+                    <p style="font-size: 16px; font-weight: 400; margin: 0; color: #6b7280;">Thank you for subscribing to CoFlex</p>
+                </div>
+
+                <p style="font-size: 16px; margin-bottom: 24px; color: #111827;">Hello {{user.first_name}} {{user.last_name}},</p>
+
+                <p style="font-size: 16px; margin-bottom: 24px; color: #374151;">Your subscription to CoFlex has been successfully processed. Below are the details of your subscription:</p>
+
+                <!-- Subscription ID box -->
+                <div style="background-color: #ecfdf5; border-radius: 8px; padding: 24px; margin: 32px 0; text-align: center; border: 1px solid #d1fae5;">
+                    <div style="font-size: 16px; font-weight: 500; color: #047857; margin-bottom: 8px;">Subscription Plan</div>
+                    <div style="font-size: 28px; font-weight: 700; letter-spacing: 2px; color: #059669; margin: 8px 0; padding: 8px 0;">{{subscription.plan}}</div>
+                    <div style="display: inline-block; margin-top: 12px; color: #047857; font-size: 14px; font-weight: 500;">
+                        <!-- Inline calendar icon -->
+                        <a href="#"><img src="https://i.ibb.co/b5F3RVrf/icons8-today-96.png" alt="Calendar" width="18" height="18" style="vertical-align: middle; margin-right: 6px;"></a>
+                        <span>Active until {{subscription.end_date}}</span>
+                    </div>
+                </div>
+
+                <!-- Subscription Details Section -->
+                <div style="background-color: #f9fafb; border-radius: 8px; padding: 24px; margin: 32px 0; border: 1px solid #f3f4f6;">
+                    <h2 style="font-size: 18px; font-weight: 600; color: #111827; margin-top: 0; margin-bottom: 16px;">Subscription Details</h2>
+
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+                        <tr>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; width: 40%; color: #6b7280; font-size: 14px;">Type</td>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #111827; font-weight: 500;">{{subscription.type}}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; width: 40%; color: #6b7280; font-size: 14px;">Valid From</td>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #111827; font-weight: 500;">{{subscription.start_date}}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; width: 40%; color: #6b7280; font-size: 14px;">Valid Until</td>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #111827; font-weight: 500;">{{subscription.end_date}}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; width: 40%; color: #6b7280; font-size: 14px;">Duration</td>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #111827; font-weight: 500;">{{subscription.duration}} days</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; width: 40%; color: #6b7280; font-size: 14px;">Status</td>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6;">
+                                <span style="background-color: #d1fae5; color: #047857; font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 4px;">{{subscription.status}}</span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Payment Details Section -->
+                <div style="background-color: #f9fafb; border-radius: 8px; padding: 24px; margin: 32px 0; border: 1px solid #f3f4f6;">
+                    <h2 style="font-size: 18px; font-weight: 600; color: #111827; margin-top: 0; margin-bottom: 16px;">Payment Details</h2>
+
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+                        <tr>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; width: 40%; color: #6b7280; font-size: 14px;">Amount</td>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #111827; font-weight: 500;">${{payment.amount}}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; width: 40%; color: #6b7280; font-size: 14px;">Date</td>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #111827; font-weight: 500;">{{payment.date}} at {{payment.time}}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; width: 40%; color: #6b7280; font-size: 14px;">Method</td>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; color: #111827; font-weight: 500;">{{payment.method}}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6; width: 40%; color: #6b7280; font-size: 14px;">Status</td>
+                            <td style="padding: 12px 0; border-bottom: 1px solid #f3f4f6;">
+                                <span style="background-color: #dbeafe; color: #1e40af; font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 4px;">{{payment.status}}</span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Subscription Benefits -->
+                <div style="background-color: #f0f9ff; border-radius: 8px; padding: 24px; margin: 32px 0; border: 1px solid #e0f2fe;">
+                    <h2 style="font-size: 18px; font-weight: 600; color: #111827; margin-top: 0; margin-bottom: 16px;">Your Subscription Benefits</h2>
+
+                    <div style="display: flex; margin-bottom: 16px;">
+                        <div style="width: 24px; margin-right: 12px; color: #0284c7;">
+                            <a href="https://imgbb.com/"><img src="https://i.ibb.co/BHNTTjQ5/icons8-tick-box-100.png" alt="Checkmark" width="20" height="20"></a>
+                        </div>
+                        <div style="flex: 1; font-size: 14px; color: #374151;">
+                            <strong>Unlimited Bookings</strong>: Book as many spaces as you need
+                        </div>
+                    </div>
+
+                    <div style="display: flex; margin-bottom: 16px;">
+                        <div style="width: 24px; margin-right: 12px; color: #0284c7;">
+                            <a href="https://imgbb.com/"><img src="https://i.ibb.co/BHNTTjQ5/icons8-tick-box-100.png" alt="Checkmark" width="20" height="20"></a>
+                        </div>
+                        <div style="flex: 1; font-size: 14px; color: #374151;">
+                            <strong>Priority Access</strong>: Get early access to in-demand spaces
+                        </div>
+                    </div>
+
+                    <div style="display: flex; margin-bottom: 16px;">
+                        <div style="width: 24px; margin-right: 12px; color: #0284c7;">
+                            <a href="https://imgbb.com/"><img src="https://i.ibb.co/BHNTTjQ5/icons8-tick-box-100.png" alt="Checkmark" width="20" height="20"></a>
+                        </div>
+                        <div style="flex: 1; font-size: 14px; color: #374151;">
+                            <strong>Premium Support</strong>: 24/7 customer service for any issues
+                        </div>
+                    </div>
+
+                    <div style="display: flex;">
+                        <div style="width: 24px; margin-right: 12px; color: #0284c7;">
+                            <a href="https://imgbb.com/"><img src="https://i.ibb.co/BHNTTjQ5/icons8-tick-box-100.png" alt="Checkmark" width="20" height="20"></a>
+                        </div>
+                        <div style="flex: 1; font-size: 14px; color: #374151;">
+                            <strong>Special Rates</strong>: Exclusive discounts on extended bookings
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Info -->
+                <div style="margin: 24px 0;">
+                    <p style="font-size: 16px; color: #374151;">You can manage your subscription anytime through your CoFlex account. If you have any questions about your subscription, feel free to contact our customer support team.</p>
+
+                    <p style="font-size: 16px; color: #374151;">Thank you for choosing CoFlex!</p>
+                </div>
+
+                <!-- Button container -->
+                <div style="margin: 32px 0; text-align: center;">
+                    <a href="#" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-weight: 600; font-size: 16px; text-decoration: none; padding: 12px 24px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                        <span style="vertical-align: middle;">Manage Subscription</span>
+                    </a>
+                </div>
+
+                <p style="font-size: 14px; color: #6b7280; margin-top: 16px;">If you have any questions, please contact our support team at <a href="mailto:support@coflex.com" style="color: #2563eb; text-decoration: none;">support@coflex.com</a></p>
+            </div>
+
+            <!-- Footer -->
+            <div style="background-color: #f9fafb; padding: 32px; text-align: center; border-top: 1px solid #f3f4f6;">
+                <div style="margin-bottom: 20px;">
+                    <a href="#" style="color: #2563eb; text-decoration: none; margin: 0 10px; font-size: 14px; font-weight: 500;">Help Center</a>
+                    <a href="#" style="color: #2563eb; text-decoration: none; margin: 0 10px; font-size: 14px; font-weight: 500;">Privacy Policy</a>
+                    <a href="#" style="color: #2563eb; text-decoration: none; margin: 0 10px; font-size: 14px; font-weight: 500;">Terms of Service</a>
+                </div>
+
+                <div style="margin: 24px 0;">
+                    <!-- Facebook icon -->
+                    <a href="#" style="display: inline-block; margin: 0 8px; text-decoration: none; width: 36px; height: 36px; background-color: #f3f4f6; border-radius: 50%; line-height: 36px; text-align: center;">
+                        <img src="https://i.ibb.co/cKRxyCHT/Facebook-Logo-Primary.png" alt="Facebook" width="20" height="20" style="vertical-align: middle;">
+                    </a>
+
+                    <!-- Instagram -->
+                    <a href="#" style="display: inline-block; margin: 0 8px; text-decoration: none; width: 36px; height: 36px; background-color: #f3f4f6; border-radius: 50%; line-height: 36px; text-align: center;">
+                        <img src="https://i.ibb.co/Pv21MBCH/Instagram-Glyph-Gradient.png" alt="Instagram" width="20" height="20" style="vertical-align: middle;">
+                    </a>
+
+                    <!-- LinkedIn icon -->
+                    <a href="#" style="display: inline-block; margin: 0 8px; text-decoration: none; width: 36px; height: 36px; background-color: #f3f4f6; border-radius: 50%; line-height: 36px; text-align: center;">
+                        <img src="https://i.ibb.co/Gr5Jwn2/LI-In-Bug.png" alt="LinkedIn" width="20" height="20" style="vertical-align: middle;">
+                    </a>
+                </div>
+
+                <div style="height: 1px; background-color: #f3f4f6; margin: 20px 0;"></div>
+                <p style="color: #6b7280; font-size: 14px; margin: 6px 0;">© {{current_year}} CoFlex. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

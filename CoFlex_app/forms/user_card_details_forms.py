@@ -3,17 +3,18 @@ from django import forms
 from django.utils.timezone import now
 from cryptography.fernet import Fernet
 from django.conf import settings
-from ..models import SandSubscribedUsers, SandSubscribedUserCardDetails, SandSubscribedUsersVerificationCode
+from ..models import SubscribedUsers, SubscribedUserCardDetails, SubscribedUsersVerificationCode
 
 
-class VerifiedUserCardDetailsForms(forms.ModelForm):
+class VerifiedUserCardDetails_SubscribedUsersVerificationCode_Forms(forms.Form):
     """
-        Form for users to enter their payment card details.
+        Form for users to enter their payment card details and verification code.
 
         card_number: Field for the credit/debit card number.
         expiry_date: Expiry date in MM/YY format.
         cvv: 3 or 4-digit CVV security code.
         card_holder_name: Full name as it appears on the card.
+        verification_code: 6-digit code sent to the user.
     """
 
     card_number = forms.CharField(
@@ -33,10 +34,12 @@ class VerifiedUserCardDetailsForms(forms.ModelForm):
         required=True,
         label='Cardholder Name'
     )
-
-    class Meta:
-        model = SandSubscribedUserCardDetails
-        fields = ['card_number', 'expiry_date', 'cvv', 'card_holder_name']
+    verification_code = forms.CharField(
+        widget=forms.TextInput(attrs={'placeholder': 'Verification Code'}),
+        max_length=6,
+        required=True,
+        label='Verification Code'
+    )
 
     # Passing the user as an instance for the further validation
     def __init__(self, *args, **kwargs):
@@ -61,6 +64,8 @@ class VerifiedUserCardDetailsForms(forms.ModelForm):
 
         if not self.luhn_check(card_number):
             raise forms.ValidationError('Invalid card number. Please check and try again.')
+
+        print(card_number)
 
         return card_number
 
@@ -108,6 +113,8 @@ class VerifiedUserCardDetailsForms(forms.ModelForm):
         if current_year > year or (current_year == year and current_month > month):
             raise forms.ValidationError('Your card has expired. Please use a valid expiry date.')
 
+        print(expiry_date)
+
         return expiry_date
 
     # Validation for the card number's cvv code
@@ -123,6 +130,8 @@ class VerifiedUserCardDetailsForms(forms.ModelForm):
         # Ensure CVV length is either 3 or 4 digits
         if not re.match(r'^\d{3,4}$', cvv):
             raise forms.ValidationError('Invalid CVV! It must be 3 or 4 digits.')
+
+        print(cvv)
 
         return cvv
 
@@ -148,36 +157,15 @@ class VerifiedUserCardDetailsForms(forms.ModelForm):
         if len(card_holder_name) < 3 or len(card_holder_name) > 50:
             raise forms.ValidationError('Cardholder name must be between 3 and 50 characters.')
 
+        print(card_holder_name)
+
         return card_holder_name
 
-    # Validation for the form
-    def clean(self):
-        cleaned_data = super().clean()
-        if SandSubscribedUsers.objects.filter(user=self.user, is_subscribed=True).exists():
-            raise forms.ValidationError('This user already has an active subscription.')
-        return cleaned_data
-
-
-class SubscribedUsersVerificationCodeForms(forms.Form):
-    """
-        Form to validate a user's subscription verification code.
-
-        verification_code: 6-digit code sent to the user.
-    """
-
-    verification_code = forms.CharField(max_length=6, required=True)
-
-    # Passing the user when initializing the form
-    def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
-        super().__init__(*args, **kwargs)
-
-    # Validation for the Verification Code
     def clean_verification_code(self):
         verification_code = self.cleaned_data.get('verification_code')
 
         # Fetching the verification entry for the user
-        verification_entry = SandSubscribedUsersVerificationCode.objects.filter(user=self.user).first()
+        verification_entry = SubscribedUsersVerificationCode.objects.filter(user=self.user).first()
 
         if not verification_entry:
             raise forms.ValidationError('No verification code found for this user.')
@@ -191,7 +179,18 @@ class SubscribedUsersVerificationCodeForms(forms.Form):
         if db_verification_code != verification_code:
             raise forms.ValidationError('Invalid verification code.')
 
+        print(verification_code)
+
         return verification_code
+
+    # Validation for the form
+    def clean(self):
+        cleaned_data = super().clean()
+        if SubscribedUsers.objects.filter(user=self.user, is_subscribed=True, is_active=True).exists():
+            raise forms.ValidationError('This user already has an active subscription.')
+
+        print(cleaned_data)
+        return cleaned_data
 
 
 

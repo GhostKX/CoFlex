@@ -1,11 +1,12 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.apps import apps
 from django.utils import timezone
 from .models import AllBookings, AllBookingDetails
 from CoFlex_app.models import (Booking, BookingDetails, VerifiedUsers,
                                UserSignUpLoginLogoutActivity)
-from CoFlex_Staff_app.models import StaffAccounts, StaffSignUpLoginLogoutActivity
+from CoFlex_Staff_app.models import (StaffAccounts, StaffSignUpLoginLogoutActivity,
+                                     StaffLocations, StaffLocationDetails, StaffLocationAvailability,
+                                     All_Locations_Bookings, All_Locations_Bookings_Details)
 from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.conf import settings
 import ipaddress
@@ -252,25 +253,26 @@ def create_edit_all_booking_data(sender, instance, created, **kwargs):
         if all_booking and all_booking_details:
             location_code = all_booking.location.location_code
 
-            location_code = f'{location_code.title()}' + '_Bookings'
-            location_code_details = f'{location_code.title()}' + '_Details'
+            if not StaffLocations.objects.filter(location_code=location_code):
+                print('No Such location in the Staff app')
+                return
 
-            LocationTable = apps.get_model('CoFlex_Staff_app', location_code)
-            LocationTableDetails = apps.get_model('CoFlex_Staff_app', location_code_details)
+            staff_location = StaffLocations.objects.get(location_code=location_code)
 
-            location_booking_table = LocationTable.objects.create(
+            location_booking_table = All_Locations_Bookings.objects.create(
                 user_first_name=all_booking.user.user.first_name,
                 user_last_name=all_booking.user.user.last_name,
                 user_email=all_booking.user.user.email,
                 user_phone_number=all_booking.user.user.profile.phone_number,
                 booking_id=all_booking.booking_id,
+                location=staff_location,
                 location_code=all_booking.location.location_code,
                 location_name=all_booking.location.location_name,
                 created_date=all_booking.created_date,
                 created_time=all_booking.created_time
             )
 
-            location_booking_table_details = LocationTableDetails.objects.create(
+            location_booking_table_details = All_Locations_Bookings_Details.objects.create(
                 location_booking=location_booking_table,
                 start_date=all_booking_details.start_date,
                 start_time=all_booking_details.start_time,
@@ -303,16 +305,10 @@ def create_edit_all_booking_data(sender, instance, created, **kwargs):
         if all_booking and all_booking_details:
             location_code = all_booking.location.location_code
 
-            location_code = f'{location_code.title()}' + '_Bookings'
-            location_code_details = f'{location_code.title()}' + '_Details'
-
-            LocationTable = apps.get_model('CoFlex_Staff_app', location_code)
-            LocationTableDetails = apps.get_model('CoFlex_Staff_app', location_code_details)
-
-            location_booking_table = LocationTable.objects.filter(booking_id=all_booking.booking_id).first()
+            location_booking_table = All_Locations_Bookings.objects.filter(booking_id=all_booking.booking_id).first()
             if location_booking_table:
 
-                LocationTable.objects.filter(booking_id=all_booking.booking_id).update(
+                All_Locations_Bookings.objects.filter(booking_id=all_booking.booking_id).update(
                     user_first_name=all_booking.user.user.first_name,
                     user_last_name=all_booking.user.user.last_name,
                     user_email=all_booking.user.user.email,
@@ -324,7 +320,7 @@ def create_edit_all_booking_data(sender, instance, created, **kwargs):
                     created_time=all_booking.created_time,
                 )
 
-                LocationTableDetails.objects.filter(location_booking=location_booking_table).update(
+                All_Locations_Bookings_Details.objects.filter(location_booking=location_booking_table).update(
                     start_date=all_booking_details.start_date,
                     start_time=all_booking_details.start_time,
                     end_date=all_booking_details.end_date,
@@ -334,52 +330,51 @@ def create_edit_all_booking_data(sender, instance, created, **kwargs):
                 )
 
 
-@receiver(post_save)
+@receiver(post_save, sender=All_Locations_Bookings_Details)
 def updating_user_booking_status(sender, instance, created, **kwargs):
-    if sender.__name__.endswith('_Bookings_Details'):
-        if not created:
-            try:
-                all_booking = AllBookings.objects.filter(booking_id=instance.location_booking.booking_id).first()
-                all_booking_details = AllBookingDetails.objects.filter(all_booking=all_booking).first()
+    if not created:
+        try:
+            all_booking = AllBookings.objects.filter(booking_id=instance.location_booking.booking_id).first()
+            all_booking_details = AllBookingDetails.objects.filter(all_booking=all_booking).first()
 
-                if all_booking_details and all_booking_details.status != instance.status:
-                    all_booking_details.status = instance.status
+            if all_booking_details and all_booking_details.status != instance.status:
+                all_booking_details.status = instance.status
+                all_booking_details.save()
+
+                if instance:
+
+                    if all_booking_details.actual_start_time != instance.actual_start_time:
+                        all_booking_details.actual_start_time = instance.actual_start_time
+                        print(f'After saving: {instance.actual_start_time}')
+
+                    if all_booking_details.actual_end_time != instance.actual_end_time:
+                        all_booking_details.actual_end_time = instance.actual_end_time
+
+                    if all_booking_details.duration != instance.duration:
+                        all_booking_details.duration = instance.duration
+
                     all_booking_details.save()
+                    print(f'Something: {instance.actual_start_time}')
 
-                    if instance:
+            booking = Booking.objects.filter(booking_id=instance.location_booking.booking_id).first()
+            booking_details = BookingDetails.objects.filter(booking=booking).first()
+            if booking_details and booking_details.status != all_booking_details.status:
+                update_fields = {}
 
-                        if all_booking_details.actual_start_time != instance.actual_start_time:
-                            all_booking_details.actual_start_time = instance.actual_start_time
-                            print(f'After saving: {instance.actual_start_time}')
+                if booking_details.status != all_booking_details.status:
+                    update_fields['status'] = all_booking_details.status
 
-                        if all_booking_details.actual_end_time != instance.actual_end_time:
-                            all_booking_details.actual_end_time = instance.actual_end_time
+                if booking_details.actual_start_time != all_booking_details.actual_start_time:
+                    update_fields['actual_start_time'] = all_booking_details.actual_start_time
 
-                        if all_booking_details.duration != instance.duration:
-                            all_booking_details.duration = instance.duration
+                if booking_details.actual_end_time != all_booking_details.actual_end_time:
+                    update_fields['actual_end_time'] = all_booking_details.actual_end_time
 
-                        all_booking_details.save()
-                        print(f'Something: {instance.actual_start_time}')
+                if booking_details.duration != all_booking_details.duration:
+                    update_fields['duration'] = all_booking_details.duration
 
-                booking = Booking.objects.filter(booking_id=instance.location_booking.booking_id).first()
-                booking_details = BookingDetails.objects.filter(booking=booking).first()
-                if booking_details and booking_details.status != all_booking_details.status:
-                    update_fields = {}
+                if update_fields:
+                    BookingDetails.objects.filter(booking=booking).update(**update_fields)
 
-                    if booking_details.status != all_booking_details.status:
-                        update_fields['status'] = all_booking_details.status
-
-                    if booking_details.actual_start_time != all_booking_details.actual_start_time:
-                        update_fields['actual_start_time'] = all_booking_details.actual_start_time
-
-                    if booking_details.actual_end_time != all_booking_details.actual_end_time:
-                        update_fields['actual_end_time'] = all_booking_details.actual_end_time
-
-                    if booking_details.duration != all_booking_details.duration:
-                        update_fields['duration'] = all_booking_details.duration
-
-                    if update_fields:
-                        BookingDetails.objects.filter(booking=booking).update(**update_fields)
-
-            except Exception as e:
-                print(f"Error updating AllBookings: {e}")
+        except Exception as e:
+            print(f"Error updating AllBookings: {e}")

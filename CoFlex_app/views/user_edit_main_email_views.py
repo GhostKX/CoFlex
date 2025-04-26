@@ -2,15 +2,15 @@ import random
 from datetime import timedelta
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.mail import send_mail
+from django.conf import settings
 from django.shortcuts import redirect, get_object_or_404, reverse
 from django.shortcuts import render
-from django.utils.html import escape
 from django.utils.timezone import now
 
 from ..forms.user_edit_main_email_forms import *
 from ..models import (VerifiedUsers, UserEditMainEmail)
 from .user_recent_actions_views import user_device_activity
+from .email_functions import send_verification_code_email
 
 
 @login_required
@@ -25,17 +25,12 @@ def user_edit_main_email(request, user_id):
             verification_code = str(random.randint(100000, 999999))
 
             try:
-                send_mail('Verification Code',
-                          f'<p>Message to {escape(user_edit.new_email)}',
-                          'settings.EMAIL_HOST_USER',
-                          [user_edit.new_email],
-                          fail_silently=False,
-                          html_message=f'<html><body style="font-size: 18px; font-family: Arial, sans-serif;">'
-                                       f'<p>{escape(user.first_name)} {escape(user.last_name)},'
-                                       f' your verification code is: <b style="font-size: 24px; font-weight: bold;">{verification_code}</b>'
-                                       f'</p>'
-                                       f'<p>This code will expire in a minute!</p>'
-                                       f'</body></html>')
+                send_verification_code_email(user=user,
+                                             sender_email=settings.EMAIL_HOST_USER,
+                                             recipient_email=user_edit.new_email,
+                                             verification_code=verification_code,
+                                             expiry_time='a minute')
+
                 messages.success(request, 'A verification code has been sent to your email!')
 
                 user_edit.verification_code = verification_code
@@ -100,17 +95,11 @@ def verify_user_edit_main_email_code_resend_code(request, user_id):
     verification_entry.save()
 
     try:
-        send_mail('Verification Code',
-                  f'<p>Message to {escape(user_new_email)}',
-                  'settings.EMAIL_HOST_USER',
-                  [user_new_email],
-                  fail_silently=False,
-                  html_message=f'<html><body style="font-size: 18px; font-family: Arial, sans-serif;">'
-                               f'<p>{escape(user.first_name)} {escape(user.last_name)},'
-                               f' your verification code is: <b style="font-size: 24px; font-weight: bold;">{verification_code}</b>'
-                               f'</p>'
-                               f'<p>This code will expire in a minute!</p>'
-                               f'</body></html>')
+        send_verification_code_email(user=user,
+                                     sender_email=settings.EMAIL_HOST_USER,
+                                     recipient_email=user_new_email,
+                                     verification_code=verification_code,
+                                     expiry_time='a minute')
         messages.success(request, 'A verification code has been sent to your email!')
     except Exception as e:
         messages.error(request, f'Error sending verification email: {e}')

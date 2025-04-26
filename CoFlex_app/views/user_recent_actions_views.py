@@ -145,13 +145,12 @@ def user_device_activity(instance, request, activity_type, activity_details):
             print("Session not found for user!")
             return
 
-        user_activity = UserDeviceActivities.objects.create(
+        UserDeviceActivities.objects.create(
             user_session=user_session,
             activity_type=activity_type,
             activity_details=activity_details,
             date_time=timezone.now()
         )
-        user_activity.save()
 
 
 @login_required

@@ -1,20 +1,7 @@
 from django.contrib import admin
 from .models import (StaffAccounts, StaffAccountsProfiles, StaffPhotoDetails, StaffEditMainEmail,
-                     C_Space_Yunusabad_Bookings, C_Space_Modera_Bookings_Details,
-                     C_Space_Modera_Bookings, C_Space_Yunusabad_Bookings_Details,
-                     C_Space_Labzak_Bookings, C_Space_Labzak_Bookings_Details,
-                     C_Space_Chust_Bookings, C_Space_Chust_Bookings_Details,
-                     C_Space_Elbek_Bookings, C_Space_Elbek_Bookings_Details,
-                     C_Space_Airport_Bookings, C_Space_Airport_Bookings_Details,
-                     Ground_Zero_Minor_Bookings, Ground_Zero_Minor_Bookings_Details,
-                     Ground_Zero_Sharq_Bookings, Ground_Zero_Sharq_Bookings_Details,
-                     Ground_Zero_Kitob_Olami_Bookings, Ground_Zero_Kitob_Olami_Bookings_Details,
-                     Bb_Works_Bookings, Bb_Works_Bookings_Details,
-                     U_Enter_Bookings, U_Enter_Bookings_Details,
-                     Impact_Coworking_Bookings, Impact_Coworking_Bookings_Details,
-                     Impulse_Coworking_Bookings, Impulse_Coworking_Bookings_Details,
-                     Hub_Coworking_Bookings, Hub_Coworking_Bookings_Details,
-                     Wiut_Bookings, Wiut_Bookings_Details,
+                     StaffLocations, StaffLocationDetails, StaffLocationAvailability,
+                     All_Locations_Bookings, All_Locations_Bookings_Details,
                      StaffSignUpLoginLogoutActivity, StaffDeviceActivities)
 from django.contrib.auth.hashers import make_password
 
@@ -69,7 +56,10 @@ class StaffEditMainEmailAdmin(admin.ModelAdmin):
 
 @admin.register(StaffSignUpLoginLogoutActivity)
 class UserSignUpLoginLogoutActivityAdmin(admin.ModelAdmin):
-    list_display = ('staff', 'session_key', 'ip_address', 'device_type', 'browser', 'operating_system', 'city', 'country', 'date_time', 'is_Logged_in', 'action')
+    list_display = (
+        'staff', 'session_key', 'ip_address', 'device_type', 'browser', 'operating_system', 'city', 'country',
+        'date_time',
+        'is_Logged_in', 'action')
     search_fields = ('staff__staff_email', 'session_key', 'ip_address', 'browser', 'city', 'country')
     list_filter = ('action', 'is_Logged_in', 'date_time', 'country')
     ordering = ('-date_time',)
@@ -83,211 +73,35 @@ class UserDeviceActivitiesAdmin(admin.ModelAdmin):
     ordering = ('-date_time',)
 
 
-@admin.register(C_Space_Yunusabad_Bookings)
-class C_Space_Yunusabad_BookingsAdmin(admin.ModelAdmin):
+@admin.register(StaffLocations)
+class StaffLocationAdmin(admin.ModelAdmin):
+    list_display = ('location_name', 'location_code', 'location_longitude', 'location_latitude')
+    search_fields = ('location_name', 'location_code')
+
+
+@admin.register(StaffLocationDetails)
+class StaffLocationDetailsAdmin(admin.ModelAdmin):
+    list_display = (
+        'location', 'address', 'contact_phone', 'working_hours', 'website', 'default_availability')
+    search_fields = ('location', 'address', 'contact_phone', 'website')
+
+
+@admin.register(StaffLocationAvailability)
+class StaffLocationDetailsAdmin(admin.ModelAdmin):
+    list_display = ('location', 'date', 'availability')
+    search_fields = ('location', 'date')
+
+
+@admin.register(All_Locations_Bookings)
+class All_Locations_BookingsAdmin(admin.ModelAdmin):
     list_display = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                    'location_code', 'location_name', 'created_date', 'created_time')
+                    'location', 'location_code', 'location_name', 'created_date', 'created_time')
     search_fields = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
                      'location_code', 'location_name')
 
 
-@admin.register(C_Space_Yunusabad_Bookings_Details)
-class C_Space_Yunusabad_Bookings_DetailsAdmin(admin.ModelAdmin):
-    list_display = ('location_booking', 'start_date', 'start_time', 'end_date', 'end_time', 'special_requests', 'status')
-    search_fields = ('location_booking',)
-
-
-@admin.register(C_Space_Modera_Bookings)
-class C_Space_Modera_BookingsAdmin(admin.ModelAdmin):
-    list_display = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                    'location_code', 'location_name', 'created_date', 'created_time')
-    search_fields = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                     'location_code', 'location_name')
-
-
-@admin.register(C_Space_Modera_Bookings_Details)
-class C_Space_Modera_Bookings_DetailsAdmin(admin.ModelAdmin):
-    list_display = ('location_booking', 'start_date', 'start_time', 'end_date', 'end_time', 'special_requests', 'status')
-    search_fields = ('location_booking',)
-
-
-@admin.register(C_Space_Labzak_Bookings)
-class C_Space_Labzak_BookingsAdmin(admin.ModelAdmin):
-    list_display = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                    'location_code', 'location_name', 'created_date', 'created_time')
-    search_fields = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                     'location_code', 'location_name')
-
-
-@admin.register(C_Space_Labzak_Bookings_Details)
-class C_Space_Labzak_Bookings_DetailsAdmin(admin.ModelAdmin):
-    list_display = ('location_booking', 'start_date', 'start_time', 'end_date', 'end_time', 'special_requests', 'status')
-    search_fields = ('location_booking',)
-
-
-@admin.register(C_Space_Chust_Bookings)
-class C_Space_Chust_BookingsAdmin(admin.ModelAdmin):
-    list_display = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                    'location_code', 'location_name', 'created_date', 'created_time')
-    search_fields = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                     'location_code', 'location_name')
-
-
-@admin.register(C_Space_Chust_Bookings_Details)
-class C_Space_Chust_Bookings_DetailsAdmin(admin.ModelAdmin):
-    list_display = ('location_booking', 'start_date', 'start_time', 'end_date', 'end_time', 'special_requests', 'status')
-    search_fields = ('location_booking',)
-
-
-@admin.register(C_Space_Elbek_Bookings)
-class C_Space_Elbek_BookingsAdmin(admin.ModelAdmin):
-    list_display = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                    'location_code', 'location_name', 'created_date', 'created_time')
-    search_fields = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                     'location_code', 'location_name')
-
-
-@admin.register(C_Space_Elbek_Bookings_Details)
-class C_Space_Elbek_Bookings_DetailsAdmin(admin.ModelAdmin):
-    list_display = ('location_booking', 'start_date', 'start_time', 'end_date', 'end_time', 'special_requests', 'status')
-    search_fields = ('location_booking',)
-
-
-@admin.register(C_Space_Airport_Bookings)
-class C_Space_Airport_BookingsAdmin(admin.ModelAdmin):
-    list_display = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                    'location_code', 'location_name', 'created_date', 'created_time')
-    search_fields = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                     'location_code', 'location_name')
-
-
-@admin.register(C_Space_Airport_Bookings_Details)
-class C_Space_Airport_Bookings_DetailsAdmin(admin.ModelAdmin):
-    list_display = ('location_booking', 'start_date', 'start_time', 'end_date', 'end_time', 'special_requests', 'status')
-    search_fields = ('location_booking',)
-
-
-@admin.register(Ground_Zero_Minor_Bookings)
-class Ground_Zero_Minor_BookingsAdmin(admin.ModelAdmin):
-    list_display = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                    'location_code', 'location_name', 'created_date', 'created_time')
-    search_fields = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                     'location_code', 'location_name')
-
-
-@admin.register(Ground_Zero_Minor_Bookings_Details)
-class Ground_Zero_Minor_Bookings_DetailsAdmin(admin.ModelAdmin):
-    list_display = ('location_booking', 'start_date', 'start_time', 'end_date', 'end_time', 'special_requests', 'status')
-    search_fields = ('location_booking',)
-
-
-@admin.register(Ground_Zero_Sharq_Bookings)
-class Ground_Zero_Sharq_BookingsAdmin(admin.ModelAdmin):
-    list_display = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                    'location_code', 'location_name', 'created_date', 'created_time')
-    search_fields = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                     'location_code', 'location_name')
-
-
-@admin.register(Ground_Zero_Sharq_Bookings_Details)
-class Ground_Zero_Sharq_Bookings_DetailsAdmin(admin.ModelAdmin):
-    list_display = ('location_booking', 'start_date', 'start_time', 'end_date', 'end_time', 'special_requests', 'status')
-    search_fields = ('location_booking',)
-
-
-@admin.register(Ground_Zero_Kitob_Olami_Bookings)
-class Ground_Zero_Kitob_Olami_BookingsAdmin(admin.ModelAdmin):
-    list_display = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                    'location_code', 'location_name', 'created_date', 'created_time')
-    search_fields = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                     'location_code', 'location_name')
-
-
-@admin.register(Ground_Zero_Kitob_Olami_Bookings_Details)
-class Ground_Zero_Kitob_Olami_Bookings_DetailsAdmin(admin.ModelAdmin):
-    list_display = ('location_booking', 'start_date', 'start_time', 'end_date', 'end_time', 'special_requests', 'status')
-    search_fields = ('location_booking',)
-
-
-@admin.register(Bb_Works_Bookings)
-class Bb_Works_BookingsAdmin(admin.ModelAdmin):
-    list_display = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                    'location_code', 'location_name', 'created_date', 'created_time')
-    search_fields = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                     'location_code', 'location_name')
-
-
-@admin.register(Bb_Works_Bookings_Details)
-class Bb_Works_Bookings_DetailsAdmin(admin.ModelAdmin):
-    list_display = ('location_booking', 'start_date', 'start_time', 'end_date', 'end_time', 'special_requests', 'status')
-    search_fields = ('location_booking',)
-
-
-@admin.register(U_Enter_Bookings)
-class U_Enter_BookingsAdmin(admin.ModelAdmin):
-    list_display = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                    'location_code', 'location_name', 'created_date', 'created_time')
-    search_fields = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                     'location_code', 'location_name')
-
-
-@admin.register(U_Enter_Bookings_Details)
-class U_Enter_Bookings_DetailsAdmin(admin.ModelAdmin):
-    list_display = ('location_booking', 'start_date', 'start_time', 'end_date', 'end_time', 'special_requests', 'status')
-    search_fields = ('location_booking',)
-
-
-@admin.register(Impact_Coworking_Bookings)
-class Impact_Coworking_BookingsAdmin(admin.ModelAdmin):
-    list_display = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                    'location_code', 'location_name', 'created_date', 'created_time')
-    search_fields = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                     'location_code', 'location_name')
-
-
-@admin.register(Impact_Coworking_Bookings_Details)
-class Impact_Coworking_Bookings_DetailsAdmin(admin.ModelAdmin):
-    list_display = ('location_booking', 'start_date', 'start_time', 'end_date', 'end_time', 'special_requests', 'status')
-    search_fields = ('location_booking',)
-
-
-@admin.register(Impulse_Coworking_Bookings)
-class Impulse_Coworking_BookingsAdmin(admin.ModelAdmin):
-    list_display = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                    'location_code', 'location_name', 'created_date', 'created_time')
-    search_fields = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                     'location_code', 'location_name')
-
-
-@admin.register(Impulse_Coworking_Bookings_Details)
-class Impulse_Coworking_Bookings_DetailsAdmin(admin.ModelAdmin):
-    list_display = ('location_booking', 'start_date', 'start_time', 'end_date', 'end_time', 'special_requests', 'status')
-    search_fields = ('location_booking',)
-
-
-@admin.register(Hub_Coworking_Bookings)
-class Hub_Coworking_BookingsAdmin(admin.ModelAdmin):
-    list_display = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                    'location_code', 'location_name', 'created_date', 'created_time')
-    search_fields = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                     'location_code', 'location_name')
-
-
-@admin.register(Hub_Coworking_Bookings_Details)
-class Hub_Coworking_Bookings_DetailsAdmin(admin.ModelAdmin):
-    list_display = ('location_booking', 'start_date', 'start_time', 'end_date', 'end_time', 'special_requests', 'status')
-    search_fields = ('location_booking',)
-
-
-@admin.register(Wiut_Bookings)
-class Wiut_BookingsAdmin(admin.ModelAdmin):
-    list_display = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                    'location_code', 'location_name', 'created_date', 'created_time')
-    search_fields = ('user_first_name', 'user_last_name', 'user_email', 'user_phone_number', 'booking_id',
-                     'location_code', 'location_name')
-
-
-@admin.register(Wiut_Bookings_Details)
-class Wiut_BookingsAdmin(admin.ModelAdmin):
-    list_display = ('location_booking', 'start_date', 'start_time', 'end_date', 'end_time', 'special_requests', 'status')
+@admin.register(All_Locations_Bookings_Details)
+class All_Locations_Bookings_DetailsAdmin(admin.ModelAdmin):
+    list_display = (
+        'location_booking', 'start_date', 'start_time', 'end_date', 'end_time', 'special_requests', 'status')
     search_fields = ('location_booking',)

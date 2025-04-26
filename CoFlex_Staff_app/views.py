@@ -4,7 +4,6 @@ from django.views.decorators.csrf import csrf_protect
 from django.conf import settings
 from django.contrib import messages
 from django.core.files.storage import FileSystemStorage
-from django.apps import apps
 from django.utils.timezone import now, localdate, localtime
 from django.contrib.auth import logout
 from django.core.mail import send_mail
@@ -12,7 +11,9 @@ from django.utils.html import escape
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 import json
-from .models import StaffAccounts, StaffEditMainEmail, StaffSignUpLoginLogoutActivity, StaffDeviceActivities
+from .models import (StaffAccounts, StaffEditMainEmail, StaffSignUpLoginLogoutActivity, StaffDeviceActivities,
+                     StaffLocations, StaffLocationDetails, StaffLocationAvailability,
+                     All_Locations_Bookings, All_Locations_Bookings_Details)
 import os
 from datetime import datetime
 from datetime import timedelta
@@ -32,20 +33,7 @@ def staff_dashboard(request, staff_id, location_code):
     staff_profile = staff.staff_profiles
     staff_photo_details = staff.staff_photo_details
 
-    location_code = f'{location_code.title()}' + '_Bookings'
-    location_code_details = f'{location_code.title()}' + '_Details'
-
-    LocationTable = apps.get_model('CoFlex_Staff_app', location_code)
-    LocationTableDetails = apps.get_model('CoFlex_Staff_app', location_code_details)
-
-    all_bookings = LocationTable.objects.all().order_by('created_date', 'created_time')
-
-    # Dynamically getting related_name
-    related_name = LocationTableDetails._meta.get_field("location_booking").related_query_name()
-
-    # Attaching related booking details to each booking object
-    for booking in all_bookings:
-        setattr(booking, "booking_details", getattr(booking, related_name, None))
+    all_bookings = All_Locations_Bookings.objects.filter(location_code=location_code).order_by('created_date', 'created_time')
 
     # Getting today's date
     tashkent_tz = pytz.timezone('Asia/Tashkent')
@@ -54,7 +42,7 @@ def staff_dashboard(request, staff_id, location_code):
     current_date = today
 
     # Getting bookings where start_date == today
-    all_bookings_today = LocationTableDetails.objects.filter(start_date=today).select_related('location_booking')
+    all_bookings_today = All_Locations_Bookings_Details.objects.filter(location_booking__location_code=location_code, start_date=today).select_related('location_booking')
 
     # Attaching booking details correctly
     for booking_detail in all_bookings_today:
@@ -107,21 +95,8 @@ def staff_specific_date(request, staff_id, location_code):
     except (ValueError, TypeError, json.JSONDecodeError):
         return JsonResponse({'error': 'Invalid request format'}, status=400)
 
-    # Getting the appropriate location table based on location_code
-    location_model_name = f'{location_code.title()}_Bookings'
-    location_details_model_name = f'{location_code.title()}_Bookings_Details'
-
-    try:
-        LocationTable = apps.get_model('CoFlex_Staff_app', location_model_name)
-        LocationTableDetails = apps.get_model('CoFlex_Staff_app', location_details_model_name)
-    except LookupError:
-        return JsonResponse({'error': 'Location not found'}, status=404)
-
-    # Getting the related name for booking details
-    related_name = LocationTableDetails._meta.get_field("location_booking").related_query_name()
-
-    all_location_bookings = LocationTable.objects.all()
-    all_location_bookings_details = LocationTableDetails.objects.all()
+    all_location_bookings = All_Locations_Bookings.objects.filter(location_code=location_code)
+    all_location_bookings_details = All_Locations_Bookings_Details.objects.filter(location_booking__location_code=location_code)
 
     if book_id_filter:
         all_location_bookings = all_location_bookings.filter(booking_id__icontains=book_id_filter)
@@ -138,7 +113,7 @@ def staff_specific_date(request, staff_id, location_code):
     # Filter bookings for the selected date and apply remaining filters
     bookings = []
     for booking in all_location_bookings:
-        booking_details = getattr(booking, related_name, None)
+        booking_details = getattr(booking, 'booking_details', None)
 
         if booking_details and booking_details.start_date == date_obj:
             start_time = booking_details.start_time.strftime('%H:%M')
@@ -412,12 +387,8 @@ def staff_calendar_date(request, staff_id, location_code):
 def staff_date_page(request, staff_id, location_code, selected_date):
     staff = get_object_or_404(StaffAccounts, id=staff_id, location_code=location_code)
 
-    location_code_bookings = f'{location_code.title()}' + '_Bookings'
-    location_code_details = f'{location_code_bookings.title()}' + '_Details'
-
-    LocationTable = apps.get_model('CoFlex_Staff_app', location_code_bookings)
-    LocationTableDetails = apps.get_model('CoFlex_Staff_app', location_code_details)
-    location_name = LocationTable.objects.filter(location_code=location_code).first().location_name
+    location = get_object_or_404(StaffLocations, location_code=location_code)
+    location_name = location.location_name
 
     if request.method == 'POST':
         try:
@@ -443,8 +414,7 @@ def staff_date_page(request, staff_id, location_code, selected_date):
         messages.error(request, "Invalid date format. Showing today's bookings instead.")
 
     # Getting all bookings for the selected date
-    all_bookings_on_selected_date = LocationTableDetails.objects.filter(start_date=query_date).select_related(
-        'location_booking')
+    all_bookings_on_selected_date = All_Locations_Bookings_Details.objects.filter(location_booking__location_code=location_code, start_date=query_date).select_related('location_booking')
 
     context = {
         'staff': staff,
@@ -461,14 +431,8 @@ def staff_date_page(request, staff_id, location_code, selected_date):
 def booking_details_view(request, staff_id, location_code, booking_id):
     staff = get_object_or_404(StaffAccounts, id=staff_id, location_code=location_code)
 
-    location_code_bookings = f'{location_code.title()}' + '_Bookings'
-    location_code_details = f'{location_code_bookings.title()}' + '_Details'
-
-    LocationTable = apps.get_model('CoFlex_Staff_app', location_code_bookings)
-    LocationTableDetails = apps.get_model('CoFlex_Staff_app', location_code_details)
-
-    booking = LocationTable.objects.get(booking_id=booking_id)
-    booking_details = LocationTableDetails.objects.get(location_booking=booking)
+    booking = All_Locations_Bookings.objects.get(booking_id=booking_id)
+    booking_details = All_Locations_Bookings_Details.objects.get(location_booking=booking)
 
     form = StaffBookingDetailsViewForms(request.POST)
     if form.is_valid():
